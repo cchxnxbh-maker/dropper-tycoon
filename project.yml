@@ -1,0 +1,36 @@
+# Selene standard library for this project: Roblox, plus the project's code-style bans (CLAUDE.md, plan section 7.4).
+# Each banned function is marked deprecated with the replacement, and selene.toml makes "deprecated" an error.
+---
+name: project
+globals:
+  wait:
+    args:
+      - required: false
+        type: number
+    deprecated:
+      message: "this project bans wait; use task.wait"
+      replace:
+        - "task.wait(%...)"
+  spawn:
+    args:
+      - type: function
+    deprecated:
+      message: "this project bans spawn; use task.spawn"
+      replace:
+        - "task.spawn(%...)"
+  delay:
+    args:
+      - type: number
+      - type: function
+    deprecated:
+      message: "this project bans delay; use task.delay"
+      replace:
+        - "task.delay(%...)"
+  math.random:
+    args:
+      - required: false
+        type: number
+      - required: false
+        type: number
+    deprecated:
+      message: "this project bans math.random; randomness comes from Rng.stream(name)"

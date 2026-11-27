@@ -123,16 +123,23 @@ Tool versions are pinned in `rokit.toml` (ADR 0005). Packages are pinned in `wal
 | `rokit install` | Installs the pinned tools |
 | `wally install` | Downloads packages into `Packages/` |
 | `rojo serve` | Syncs `src/` into Studio |
-| `stylua src tests tools` | Formats code |
-| `selene src` | Lints code |
-| `lune run check` | **The check.** Arrives in task 4. Until then run `stylua --check src` and `selene src` |
+| `stylua src tests tools .lune` | Formats code |
+| `lune run check` | **The check.** Must pass before every commit (ADR 0015, `docs/modules/check.md`) |
+| `lune run test [filter]` | Unit tests only, optionally only specs whose path contains `filter` |
 
-The check runs, in order and stopping at the first failure: index regeneration, StyLua, Selene, Rojo sourcemap plus
-luau-lsp analyze, the boundary, literal and docs checks, config validation and balance, then unit tests. A pre-commit
-hook and GitHub Actions run the same command.
+The check runs, in order and stopping at the first failure: StyLua, Selene, Rojo sourcemap plus luau-lsp analyze, then
+unit tests. Index regeneration, the literal, boundary and docs checks, and config validation and balance join from
+task 7. The pre-commit hook (`.githooks/pre-commit`, turned on with `git config core.hooksPath .githooks`) and GitHub
+Actions (`.github/workflows/check.yml`) run the same command. Never commit with `--no-verify`.
+
+Specs live in `tests/` as `*.spec.luau`, mirroring `src/`, and use `tools/testkit.luau` (`describe`, `it`, `expect`).
 
 **Cloud container note.** The Wally registry and GitHub release downloads are blocked from the cloud container, so
-`wally install` and `rokit install` may fail there. `wally.lock` is produced on Daniel's PC. Do not hand-edit it.
+`wally install` and `rokit install` fail there. crates.io works: build the pinned versions with
+`cargo install --locked <tool> --version <pin>` (stylua needs `--features luau`), and build luau-lsp from its Git tag
+with CMake. Lune and Selene do not trust the container's proxy certificate, so fetch their downloads with `curl`:
+Roblox type definitions into `.cache/luau-lsp-<pin>/globalTypes.None.d.luau`, and Selene's Roblox library through a
+local Selene build that reads a curl-fetched API dump. `wally.lock` is produced on Daniel's PC. Do not hand-edit it.
 
 ## The task loop
 

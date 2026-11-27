@@ -20,9 +20,10 @@ new record that supersedes it.
 | [0012](0012-flags-in-code.md) | Flags and tuning in code for v1 | Accepted | Build plan |
 | [0013](0013-private-repo-and-single-place.md) | Private repository and a single place | Accepted | Build plan assumptions |
 | [0014](0014-dev-and-live-experiences.md) | Separate Dev and Live; Daniel publishes Live | Accepted | Build plan |
+| [0015](0015-the-check.md) | How the check runs: Lune command, pre-commit hook, GitHub Actions | Accepted | Claude's recommendation, accepted by Daniel |
 
 "Build plan" means the plan's recommendation, which Daniel accepted when he approved the plan.
 
 ## Still open
 
-- **Theme and name.** Needed before art starts in Phase 2. When decided, it gets the next record number.
+- **Theme and name.** Needed before art starts in Phase 2. When decided, it gets the next free record number.

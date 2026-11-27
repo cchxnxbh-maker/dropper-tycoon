@@ -6,4 +6,5 @@ wally = "upliftgames/wally@0.3.2"
 lune = "lune-org/lune@0.11.1"
 selene = "kampfkarren/selene@0.31.0"
 stylua = "johnnymorganz/stylua@2.6.0"
-# luau-lsp is added in task 4 (the check) with `rokit add johnnymorganz/luau-lsp`, which pins the current release.
+# Added in task 4 for type analysis in the check (ADR 0015). The check downloads Roblox type definitions for this version.
+luau-lsp = "johnnymorganz/luau-lsp@1.70.1"
