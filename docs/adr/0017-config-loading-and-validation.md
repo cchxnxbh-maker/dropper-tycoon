@@ -1,8 +1,8 @@
 # 0017. How config is loaded, checked and indexed
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
-- **Decided by:** Claude's recommendation, awaiting Daniel
+- **Decided by:** Claude's recommendation, accepted by Daniel
 
 ## Context
 
