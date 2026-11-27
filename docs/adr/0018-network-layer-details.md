@@ -1,8 +1,8 @@
 # 0018. How the network layer is built
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
-- **Decided by:** Claude's recommendation, waiting for Daniel
+- **Decided by:** Claude's recommendation, accepted by Daniel
 
 ## Context
 
