@@ -52,8 +52,9 @@ rebirths, prestige points, time. The client only asks and displays.
 
 **Remotes.**
 
-- Every remote is declared once, in `src/shared/Network/Remotes.luau`, with its payload check and rate limit. No other
-  file creates a remote.
+- Every remote is declared once, in `src/shared/Network/Remotes.luau`, with its payload rule, rate limit and a valid
+  example (ADR 0018). Only `Network/RemoteFolder.luau` creates remote instances. Each client request has one handler
+  file in `src/server/Net/Handlers/`, named after it. `Dev/` folders hold Studio-only test code.
 - Clients send IDs only, never prices, amounts or positions.
 - RemoteEvents by default. A RemoteFunction only from client to server. The server never invokes a client.
 - `ServerNet` checks every request (payload type, rate limit, session state is `Playing`) before a handler sees it.
@@ -89,8 +90,8 @@ functions or listen to its signals.
 
 | Folder | In Roblox | Holds |
 | --- | --- | --- |
-| `src/server` | ServerScriptService.Server | Services, Net, Migrations, Vendor (ProfileStore) |
-| `src/client` | StarterPlayerScripts.Client | Controllers, UI screens, UI kit, views |
+| `src/server` | ServerScriptService.Server | Services, Net (ServerNet, Pipeline, Handlers), Migrations, Vendor, Dev |
+| `src/client` | StarterPlayerScripts.Client | Controllers, Net (ClientNet), UI screens, UI kit, views, Dev |
 | `src/shared` | ReplicatedStorage.Shared | Config, Logic, Network, Types, Util. Assume exploiters read all of it |
 | `src/first` | ReplicatedFirst.First | Loading screen only |
 | `place/Game.rbxl` | the place file | Map, plot template, models (Git LFS) |

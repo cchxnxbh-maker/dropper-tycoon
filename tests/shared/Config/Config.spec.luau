@@ -12,7 +12,18 @@ local function good(): any
 	return {
 		Build = { version = "1.2.3" },
 		Flags = { Features = { offlineEarnings = false }, Log = { default = "info", tags = { Purchase = "debug" } } },
-		Tuning = { Timing = { simRate = 10, maxCatchUpSteps = 5 } },
+		Tuning = {
+			Timing = { simRate = 10, maxCatchUpSteps = 5 },
+			Network = {
+				maxStringLength = 200,
+				maxTableDepth = 3,
+				maxTableEntries = 32,
+				strikeWindowSeconds = 60,
+				kickAfterStrikes = 30,
+				clientRateShare = 0.8,
+			},
+		},
+		Strings = { Net = { kicked = "Bye." } },
 		Buildables = { CoalDropper = { id = "CoalDropper" } },
 	}
 end
@@ -68,6 +79,22 @@ describe("Schema.validate", function()
 		config.Tuning.Timing.simrate = 10
 		expect(Schema.validate(config)).toEqual({
 			"Tuning.Timing.simrate: is not a known field (check the spelling), got 10",
+		})
+	end)
+
+	it("rejects a kick threshold too low to survive one lag spike", function()
+		local config = good()
+		config.Tuning.Network.kickAfterStrikes = 2
+		expect(Schema.validate(config)).toEqual({ "Tuning.Network.kickAfterStrikes: must be at least 5, got 2" })
+	end)
+
+	it("rejects empty or badly keyed player text", function()
+		local config = good()
+		config.Strings.Net.kicked = "  "
+		config.Strings.Net.Shout = "Hi"
+		expect(Schema.validate(config)).toEqual({
+			'Strings.Net.Shout (name): must look like kicked (camelCase), got "Shout"',
+			'Strings.Net.kicked: must look like real words (not empty), got "  "',
 		})
 	end)
 

@@ -17,7 +17,7 @@
 export type Problems = { string }
 export type Rule = (value: any, path: string, problems: Problems) -> ()
 export type NumberOptions = { integer: boolean?, min: number?, max: number? }
-export type StringOptions = { oneOf: { string }?, pattern: string?, hint: string? }
+export type StringOptions = { oneOf: { string }?, pattern: string?, hint: string?, maxLength: number? }
 
 local Validate = {}
 
@@ -55,7 +55,7 @@ local function sortedKeys(value: { [any]: any }): { any }
 end
 
 --[[
-	A number, optionally whole and inside a range. NaN is never accepted.
+	A number, optionally whole and inside a range. NaN and infinity are never accepted.
 	@param options `integer` for whole numbers only, `min` and `max` inclusive bounds
 	@return the rule
 ]]
@@ -64,6 +64,8 @@ function Validate.number(options: NumberOptions?): Rule
 	return function(value, path, problems)
 		if type(value) ~= "number" or value ~= value then
 			add(problems, path, "must be a number", value)
+		elseif value == math.huge or value == -math.huge then
+			add(problems, path, "must be a finite number", value)
 		elseif opts.integer and value % 1 ~= 0 then
 			add(problems, path, "must be a whole number", value)
 		elseif opts.min ~= nil and value < opts.min then
@@ -87,8 +89,9 @@ function Validate.boolean(): Rule
 end
 
 --[[
-	A string, optionally one of a list or matching a Lua pattern.
-	@param options `oneOf` allowed values, `pattern` a Lua pattern, `hint` words shown when the pattern does not match
+	A string, optionally one of a list, matching a Lua pattern, or no longer than a limit.
+	@param options `oneOf` allowed values, `pattern` a Lua pattern, `hint` words shown when the pattern does not match,
+	`maxLength` the most characters (bytes) allowed
 	@return the rule
 ]]
 function Validate.string(options: StringOptions?): Rule
@@ -99,7 +102,13 @@ function Validate.string(options: StringOptions?): Rule
 			return
 		end
 		local allowed = opts.oneOf
-		if allowed and table.find(allowed, value) == nil then
+		if opts.maxLength ~= nil and #value > opts.maxLength then
+			-- The value itself is not shown: it may be huge.
+			table.insert(
+				problems,
+				`{if path == "" then "(root)" else path}: must be at most {opts.maxLength} characters, got {#value}`
+			)
+		elseif allowed and table.find(allowed, value) == nil then
 			add(problems, path, "must be one of " .. table.concat(allowed, ", "), value)
 		elseif opts.pattern and string.match(value, opts.pattern) == nil then
 			add(problems, path, `must look {opts.hint or "like " .. opts.pattern}`, value)

@@ -42,7 +42,22 @@ local rules = Validate.record({
 			simRate = Validate.number({ integer = true, min = 1, max = 60 }),
 			maxCatchUpSteps = Validate.number({ integer = true, min = 1, max = 30 }),
 		}),
+		Network = Validate.record({
+			maxStringLength = Validate.number({ integer = true, min = 16, max = 10000 }),
+			maxTableDepth = Validate.number({ integer = true, min = 1, max = 8 }),
+			maxTableEntries = Validate.number({ integer = true, min = 1, max = 1000 }),
+			strikeWindowSeconds = Validate.number({ min = 1, max = 3600 }),
+			kickAfterStrikes = Validate.number({ integer = true, min = 5, max = 10000 }),
+			clientRateShare = Validate.number({ min = 0.1, max = 1 }),
+		}),
 	}),
+	Strings = Validate.map(
+		Validate.string({ pattern = "^%u%w*$", hint = "like Net (PascalCase)" }),
+		Validate.map(
+			Validate.string({ pattern = "^%l%w*$", hint = "like kicked (camelCase)" }),
+			Validate.string({ pattern = "%S", hint = "like real words (not empty)", maxLength = 500 })
+		)
+	),
 	-- Entry rules arrive with the buildable schema (plan section 5.1). Until then each entry's ID is checked.
 	Buildables = Validate.registry(nil),
 })
