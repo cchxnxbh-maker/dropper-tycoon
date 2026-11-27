@@ -2,9 +2,10 @@
 -- Scheduler: the game loop. Each system registers its own named step instead of sharing one update function (plan
 -- section 4.1).
 --
--- `every` registers a fixed-rate step: it always receives the same `dt`, at most `Tuning.Timing.maxCatchUpSteps` of
--- them run in one frame, and time beyond that goes to the step's `onSkipped` handler to be paid by formula. `onRender`
--- registers a per-frame client callback that gets the frame's `dt` and the `alpha` of the fixed step it follows.
+-- `every` registers a fixed-rate step: it always receives the same `dt`, at most
+-- `Config.Tuning.Timing.maxCatchUpSteps` of them run in one frame, and time beyond that goes to the step's `onSkipped`
+-- handler to be paid by formula. `onRender` registers a per-frame client callback that gets the frame's `dt` and the
+-- `alpha` of the fixed step it follows.
 --
 -- Steps run in name order, so the order never depends on which module was required first. Each step is wrapped in a
 -- MicroProfiler label with its name. A step that errors is logged once and keeps being called, so one broken system
@@ -15,13 +16,13 @@
 -- State owned: registered steps, their FixedStep accumulators and render callbacks.
 --
 -- Usage:
---     Scheduler.every("FactorySim", Tuning.Timing.simRate, function(dt) ... end, function(skipped) ... end)
+--     Scheduler.every("FactorySim", Config.Tuning.Timing.simRate, function(dt) ... end, function(skipped) ... end)
 --     Scheduler.onRender("ItemVisuals", function(dt, alpha) ... end, "FactorySim")
 --     RunService.Heartbeat:Connect(Scheduler.update)    -- in Main only
 
+local Config = require("../Config")
 local FixedStep = require("./FixedStep")
 local Log = require("./Log")
-local Tuning = require("../Config/Tuning")
 
 export type StepFn = (dt: number) -> ()
 export type SkippedFn = (seconds: number) -> ()
@@ -100,7 +101,7 @@ function Scheduler.every(name: string, rate: number, step: StepFn, onSkipped: Sk
 	assert(not isTaken(name), "Scheduler: a step named " .. name .. " already exists")
 	local entry: FixedEntry = {
 		name = name,
-		clock = FixedStep.new(rate, Tuning.Timing.maxCatchUpSteps),
+		clock = FixedStep.new(rate, Config.Tuning.Timing.maxCatchUpSteps),
 		step = step,
 		onSkipped = onSkipped,
 		failed = false,

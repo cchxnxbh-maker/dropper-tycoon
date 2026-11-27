@@ -5,7 +5,7 @@ File: `src/shared/Util/Scheduler.luau`. Specs: `tests/shared/Util/Scheduler.spec
 The game loop. There is no global update function: each system registers its own named step.
 
 ```luau
-Scheduler.every("FactorySim", Tuning.Timing.simRate, function(dt) ... end, function(skipped) ... end)
+Scheduler.every("FactorySim", Config.Tuning.Timing.simRate, function(dt) ... end, function(skipped) ... end)
 Scheduler.onRender("ItemVisuals", function(dt, alpha) ... end, "FactorySim")  -- client only
 ```
 
@@ -21,7 +21,7 @@ Scheduler.onRender("ItemVisuals", function(dt, alpha) ... end, "FactorySim")  --
 
 Rules:
 
-- At most `Tuning.Timing.maxCatchUpSteps` (5) steps of one kind run in a frame. Time beyond that goes to `onSkipped`
+- At most `Config.Tuning.Timing.maxCatchUpSteps` (5) steps of one kind run in a frame. Time beyond that goes to `onSkipped`
   once, as seconds, so the owner pays it by formula (for the factory, the income-rate formula). A stall never costs
   cash and never spirals.
 - Steps run in name order, never in require order. Names are unique across fixed and render steps.

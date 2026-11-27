@@ -12,12 +12,16 @@ local fs = require("@lune/fs")
 local net = require("@lune/net")
 local process = require("@lune/process")
 
+local checkLiterals = require("./check-literals")
+local genIndex = require("./gen-index")
 local test = require("./test")
+local validateConfig = require("./validate-config")
 
 -- Folders holding Luau that StyLua and Selene look at.
 local LUAU_FOLDERS = { "src", "tests", "tools", ".lune" }
--- What luau-lsp type-checks. The other tools files use Lune's own libraries, which luau-lsp does not know here.
-local ANALYZE_PATHS = { "src", "tests", "tools/testkit.luau" }
+-- What luau-lsp type-checks. The other tools files use Lune's own libraries, which luau-lsp does not know here, so
+-- their pure parts live in `tools/lib`.
+local ANALYZE_PATHS = { "src", "tests", "tools/testkit.luau", "tools/lib" }
 local CACHE_DIR = ".cache"
 local SOURCEMAP = "sourcemap.json"
 local DEFINITIONS_FILE = "globalTypes.None.d.luau"
@@ -99,6 +103,12 @@ end
 
 check.steps = {
 	{
+		name = "Indexes (gen-index)",
+		run = function()
+			return genIndex.run() == "current"
+		end,
+	},
+	{
 		name = "Format (StyLua)",
 		run = function()
 			return exec("stylua", joined({ "--check" }, LUAU_FOLDERS))
@@ -111,7 +121,9 @@ check.steps = {
 		end,
 	},
 	{ name = "Types (Rojo sourcemap, luau-lsp)", run = typeCheck },
-	-- TODO(task-7): index regeneration first, and the literal, boundary, docs and config checks before the tests.
+	-- The boundary and docs checks join here, and `balance` after validate-config, as their systems arrive.
+	{ name = "No stray numbers (check-literals)", run = checkLiterals.run },
+	{ name = "Config values (validate-config)", run = validateConfig.run },
 	{
 		name = "Unit tests (Lune)",
 		run = function()

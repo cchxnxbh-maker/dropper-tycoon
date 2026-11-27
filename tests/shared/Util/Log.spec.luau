@@ -79,3 +79,20 @@ describe("Log levels", function()
 		expect(lines[1].line).toBe("[ERROR] [Data] save failed userId=1")
 	end)
 end)
+
+describe("Log.setBuild", function()
+	it("starts every line with the build version until cleared", function()
+		Log.setBuild("0.3.0")
+		local withBuild = Log.format("info", "Server", "started", { seed = 7 })
+		Log.setBuild(nil)
+		expect(withBuild).toBe("[v0.3.0] [INFO] [Server] started seed=7")
+		expect(Log.format("info", "Server", "started")).toBe("[INFO] [Server] started")
+	end)
+
+	it("lists every level, lowest first", function()
+		expect(Log.LEVELS).toEqual({ "debug", "info", "warn", "error" })
+		for _, level: Log.Level in Log.LEVELS do
+			expect(Log.enabled(level, "Anything")).toBe(level ~= "debug")
+		end
+	end)
+end)

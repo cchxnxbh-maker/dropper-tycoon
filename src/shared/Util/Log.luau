@@ -3,8 +3,8 @@
 --
 -- Every line has a level, a tag naming the system, a short message and optional fields, printed in sorted key order
 -- so the same event always prints the same line. Levels are debug < info < warn < error, with a default level and an
--- optional level per tag. Task 7 feeds these from `Config/Flags.luau` through `Log.configure`. Fields carry the user
--- ID and nothing more personal.
+-- optional level per tag, fed from `Config/Flags.luau` through `Log.configure`. Once `Log.setBuild` is called, every
+-- line starts with the build version. Fields carry the user ID and nothing more personal.
 --
 -- `warn` and `error` lines go to Roblox's `warn`, the rest to `print`. `Log.error` never throws.
 --
@@ -12,7 +12,7 @@
 --
 -- Usage:
 --     Log.info("Purchase", "bought", { userId = id, buildable = "CoalDropper" })
---     -- [INFO] [Purchase] bought buildable=CoalDropper userId=123
+--     -- [v0.3.0] [INFO] [Purchase] bought buildable=CoalDropper userId=123
 
 export type Level = "debug" | "info" | "warn" | "error"
 export type Fields = { [string]: any }
@@ -23,7 +23,13 @@ local RANK: { [string]: number } = { debug = 1, info = 2, warn = 3, error = 4 }
 
 local Log = {}
 
+-- Every level name, lowest first. The config schema checks `Config/Flags.luau` against this list.
+local LEVELS: { Level } = { "debug", "info", "warn", "error" }
+table.freeze(LEVELS)
+Log.LEVELS = LEVELS
+
 local defaultLevel: Level = "info"
+local build: string? = nil
 local tagLevels: { [string]: Level } = {}
 
 local function defaultSink(level: Level, line: string)
@@ -55,7 +61,8 @@ end
 	@return the formatted line
 ]]
 function Log.format(level: Level, tag: string, message: string, fields: Fields?): string
-	local parts = { string.format("[%s] [%s] %s", string.upper(level), tag, message) }
+	local head = string.format("[%s] [%s] %s", string.upper(level), tag, message)
+	local parts = { if build then `[v{build}] {head}` else head }
 	if fields then
 		local keys: { string } = {}
 		for key in fields do
@@ -141,6 +148,14 @@ function Log.configure(settings: Settings)
 	end
 	defaultLevel = default
 	tagLevels = tags
+end
+
+--[[
+	Starts every line with the build version, such as `[v0.3.0]`. Both `Main` scripts call it from `Config/Build.luau`.
+	@param version the build version, or nil to stop adding it
+]]
+function Log.setBuild(version: string?)
+	build = version
 end
 
 --[[
