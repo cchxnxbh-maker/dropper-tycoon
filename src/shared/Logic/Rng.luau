@@ -15,11 +15,11 @@
 --     local loot = Rng.stream("Loot")
 --     local roll = loot:nextInteger(1, 6)
 
-local TWO_32 = 4294967296
-local TWO_53 = 9007199254740992
-local FNV_OFFSET = 2166136261
-local FNV_PRIME = 16777619
-local GOLDEN = 0x9E3779B9
+local TWO_32 = 4294967296 -- const: 2^32, the 32-bit range
+local TWO_53 = 9007199254740992 -- const: 2^53, the double's exact-integer range
+local FNV_OFFSET = 2166136261 -- const: FNV-1a 32-bit offset basis
+local FNV_PRIME = 16777619 -- const: FNV-1a 32-bit prime
+local GOLDEN = 0x9E3779B9 -- const: SplitMix32 increment (golden ratio)
 
 export type Generator = {
 	nextU32: (self: Generator) -> number,
@@ -38,9 +38,9 @@ local streams: { [string]: Generator } = {}
 
 -- Low 32 bits of a * b. Splits b into 16-bit halves so every partial product stays exact in a double.
 local function mul32(a: number, b: number): number
-	local bLow = bit32.band(b, 0xFFFF)
-	local bHigh = bit32.rshift(b, 16)
-	return (a * bLow + bit32.band(a * bHigh, 0xFFFF) * 65536) % TWO_32
+	local bLow = bit32.band(b, 0xFFFF) -- const: 16-bit halves
+	local bHigh = bit32.rshift(b, 16) -- const: 16-bit halves
+	return (a * bLow + bit32.band(a * bHigh, 0xFFFF) * 65536) % TWO_32 -- const: 16-bit halves
 end
 
 -- FNV-1a over the bytes of `text`, starting from `basis`.
@@ -58,9 +58,9 @@ local function splitMix(seed: number): () -> number
 	return function(): number
 		current = (current + GOLDEN) % TWO_32
 		local z = current
-		z = mul32(bit32.bxor(z, bit32.rshift(z, 16)), 0x85EBCA6B)
-		z = mul32(bit32.bxor(z, bit32.rshift(z, 13)), 0xC2B2AE35)
-		return bit32.bxor(z, bit32.rshift(z, 16))
+		z = mul32(bit32.bxor(z, bit32.rshift(z, 16)), 0x85EBCA6B) -- const: SplitMix32 mixing step
+		z = mul32(bit32.bxor(z, bit32.rshift(z, 13)), 0xC2B2AE35) -- const: SplitMix32 mixing step
+		return bit32.bxor(z, bit32.rshift(z, 16)) -- const: SplitMix32 mixing step
 	end
 end
 
@@ -71,23 +71,23 @@ Generator.__index = Generator
 function Generator.nextU32(self: Generator): number
 	local state = (self :: any) :: State
 	local s0, s1, s2, s3 = state.s0, state.s1, state.s2, state.s3
-	local result = mul32(bit32.lrotate(mul32(s1, 5), 7), 9)
-	local t = bit32.lshift(s1, 9)
+	local result = mul32(bit32.lrotate(mul32(s1, 5), 7), 9) -- const: xoshiro128** scramble
+	local t = bit32.lshift(s1, 9) -- const: xoshiro128** shift
 	s2 = bit32.bxor(s2, s0)
 	s3 = bit32.bxor(s3, s1)
 	s1 = bit32.bxor(s1, s2)
 	s0 = bit32.bxor(s0, s3)
 	s2 = bit32.bxor(s2, t)
-	s3 = bit32.lrotate(s3, 11)
+	s3 = bit32.lrotate(s3, 11) -- const: xoshiro128** rotation
 	state.s0, state.s1, state.s2, state.s3 = s0, s1, s2, s3
 	return result
 end
 
 -- A number in [0, 1) with 53 random bits, built from two draws.
 function Generator.nextNumber(self: Generator): number
-	local high = bit32.rshift(self:nextU32(), 5) -- 27 bits
-	local low = bit32.rshift(self:nextU32(), 6) -- 26 bits
-	return (high * 67108864 + low) / TWO_53
+	local high = bit32.rshift(self:nextU32(), 5) -- const: keep 27 bits
+	local low = bit32.rshift(self:nextU32(), 6) -- const: keep 26 bits
+	return (high * 67108864 + low) / TWO_53 -- const: 2^26, shifts the high bits past the low 26
 end
 
 -- A whole number in [min, max], both ends included, with no modulo bias.

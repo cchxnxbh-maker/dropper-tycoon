@@ -5,9 +5,9 @@
 local testkit = require("../../../tools/testkit")
 local describe, it, expect = testkit.describe, testkit.it, testkit.expect
 
+local Config = require("../../../src/shared/Config")
 local Log = require("../../../src/shared/Util/Log")
 local Scheduler = require("../../../src/shared/Util/Scheduler")
-local Tuning = require("../../../src/shared/Config/Tuning")
 
 local INCOME_PER_SECOND = 7.5
 
@@ -15,7 +15,7 @@ local INCOME_PER_SECOND = 7.5
 local function runEconomy(frameTimes: { number }): (number, number)
 	Scheduler.reset()
 	local cash, ticks = 0, 0
-	Scheduler.every("FactorySim", Tuning.Timing.simRate, function(dt)
+	Scheduler.every("FactorySim", Config.Tuning.Timing.simRate, function(dt)
 		ticks += 1
 		cash += INCOME_PER_SECOND * dt
 	end, function(skipped)
@@ -50,7 +50,7 @@ describe("Scheduler.every", function()
 
 	it("caps catch-up at the tuned step count and pays the rest by formula", function()
 		local cash, ticks = runEconomy({ 10 })
-		expect(ticks).toBe(Tuning.Timing.maxCatchUpSteps)
+		expect(ticks).toBe(Config.Tuning.Timing.maxCatchUpSteps)
 		expect(cash).toBeCloseTo(INCOME_PER_SECOND * 10, 1e-9)
 	end)
 

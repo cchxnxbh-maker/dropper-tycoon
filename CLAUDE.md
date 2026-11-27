@@ -97,8 +97,9 @@ functions or listen to its signals.
 
 - `src/shared/Logic` is pure Luau: relative requires only, never touches `game`, iterates arrays or sorted keys (no bare
   `pairs`), never reads the clock. That is what lets Lune test it without Studio.
-- All tunable numbers live in `src/shared/Config`. Asset IDs appear only in `Config/Assets.luau`. Player-facing text
-  goes through `Config/Strings.luau`.
+- All tunable numbers live in `src/shared/Config`. Code reads them through `Config` (validated, frozen), never a data
+  file directly. A fixed fact in services, logic or controllers keeps its number only with a `-- const:` reason. Asset
+  IDs appear only in `Config/Assets.luau`. Player-facing text goes through `Config/Strings.luau`.
 - Adding content is adding a file plus a registry entry. Core systems stay untouched.
 - UI is built by code from plain view modules over a small kit (ADR 0007). StarterGui stays empty.
 
@@ -126,11 +127,14 @@ Tool versions are pinned in `rokit.toml` (ADR 0005). Packages are pinned in `wal
 | `stylua src tests tools .lune` | Formats code |
 | `lune run check` | **The check.** Must pass before every commit (ADR 0015, `docs/modules/check.md`) |
 | `lune run test [filter]` | Unit tests only, optionally only specs whose path contains `filter` |
+| `lune run gen-index` | Rewrites registry `init.luau` indexes after adding or removing a registry file |
+| `lune run validate-config` | Checks config values; one readable line per problem |
 
-The check runs, in order and stopping at the first failure: StyLua, Selene, Rojo sourcemap plus luau-lsp analyze, then
-unit tests. Index regeneration, the literal, boundary and docs checks, and config validation and balance join from
-task 7. The pre-commit hook (`.githooks/pre-commit`, turned on with `git config core.hooksPath .githooks`) and GitHub
-Actions (`.github/workflows/check.yml`) run the same command. Never commit with `--no-verify`.
+The check runs, in order and stopping at the first failure: index regeneration, StyLua, Selene, Rojo sourcemap plus
+luau-lsp analyze, `check-literals`, `validate-config`, then unit tests. The boundary and docs checks and `balance` join
+as their systems arrive. The pre-commit hook (`.githooks/pre-commit`, turned on with
+`git config core.hooksPath .githooks`) and GitHub Actions (`.github/workflows/check.yml`) run the same command. Never
+commit with `--no-verify`.
 
 Specs live in `tests/` as `*.spec.luau`, mirroring `src/`, and use `tools/testkit.luau` (`describe`, `it`, `expect`).
 

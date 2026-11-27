@@ -22,6 +22,7 @@ new record that supersedes it.
 | [0014](0014-dev-and-live-experiences.md) | Separate Dev and Live; Daniel publishes Live | Accepted | Build plan |
 | [0015](0015-the-check.md) | How the check runs: Lune command, pre-commit hook, GitHub Actions | Accepted | Claude's recommendation, accepted by Daniel |
 | [0016](0016-own-seeded-rng.md) | Our own seeded random generator (xoshiro128**) | Accepted | Claude's recommendation, accepted by Daniel |
+| [0017](0017-config-loading-and-validation.md) | How config is loaded, checked and indexed | Proposed | Claude's recommendation, awaiting Daniel |
 
 "Build plan" means the plan's recommendation, which Daniel accepted when he approved the plan.
 
