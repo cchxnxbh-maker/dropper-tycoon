@@ -1,0 +1,38 @@
+# Runs the check on every push to any branch (plan section 7.5, ADR 0015).
+# A pull request shows this as the "Check" status. It is the same command the pre-commit hook runs.
+name: Check
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      # Installs Rokit, then every tool at the version pinned in rokit.toml.
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Install packages
+        run: wally install
+
+      - name: Cache Roblox type definitions
+        uses: actions/cache@v6
+        with:
+          path: .cache
+          key: luau-defs-${{ hashFiles('rokit.toml') }}
+
+      - name: Run the check
+        run: lune run check

@@ -6,8 +6,8 @@ share a server, each with their own plot. PC first.
 
 The name and theme are still open. Code is written by Claude Code and directed and playtested by Daniel.
 
-**Status:** Phase 0, foundation. The repository scaffold and the agent rules are in place. The check (task 4) and the
-first game systems come next.
+**Status:** Phase 0, foundation. The repository scaffold, the agent rules and the check are in place. Connecting the
+agent to Studio (task 5) and the first game systems come next.
 
 ## How the project works
 
@@ -70,14 +70,52 @@ Every saved change to a file in `src/` appears in Studio straight away.
 
 ## Checking the code
 
-From task 4, one command decides whether a change is acceptable:
+One command decides whether a change is acceptable:
 
 ```powershell
 lune run check
 ```
 
-It runs formatting, lint, type analysis, the project's own rule checks and the tests, and stops at the first failure.
-Every commit and every push runs it too. Until task 4 lands, the agent runs `stylua --check src` and `selene src`.
+It checks formatting (StyLua), lint (Selene), types (luau-lsp) and runs the tests, and stops at the first failure.
+It ends with `Check passed` or `Check FAILED at step ...`. GitHub runs the same check on every push, and the result
+shows on each pull request. To run only the tests, use `lune run test`.
+
+### Turn on the check before each commit (once per PC)
+
+1. Open PowerShell in the project folder:
+   ```powershell
+   cd $HOME\dropper-tycoon
+   git pull
+   ```
+2. Install the new type checker (luau-lsp). If Rokit asks whether to trust it, answer yes:
+   ```powershell
+   rokit install
+   ```
+3. Tell Git to use the project's hooks folder:
+   ```powershell
+   git config core.hooksPath .githooks
+   ```
+4. Run the check once. The first run downloads Roblox's type definitions, so it needs internet:
+   ```powershell
+   lune run check
+   ```
+
+From now on, `git commit` runs the check first and refuses the commit if it fails.
+
+### Try it: a broken file is refused
+
+1. Make a file with a deliberate mistake and try to commit it:
+   ```powershell
+   Set-Content -Path src\shared\Broken.luau -Value "--!strict`nlocal x: number = `"not a number`"`nreturn x"
+   git add src\shared\Broken.luau
+   git commit -m "test: this commit should be refused"
+   ```
+   The check prints `Check FAILED at step ...` and Git makes no commit.
+2. Clean up:
+   ```powershell
+   git restore --staged src\shared\Broken.luau
+   Remove-Item src\shared\Broken.luau
+   ```
 
 ## Publishing
 
@@ -106,6 +144,10 @@ click. The full release steps will be in `docs/RUNBOOK.md`.
 - **The Rojo button is missing in Studio.** Close Studio, run `rojo plugin install`, then open Studio again.
 - **Rojo says it cannot connect.** Check that `rojo serve` is still running in PowerShell and shows port 34872.
 - **Nothing prints when you press Play.** Make sure Rojo shows as connected before pressing Play.
+- **`luau-lsp` is "not recognized" during the check.** Run `rokit install` in the project folder, then open a new
+  PowerShell window.
+- **The check says it could not download type definitions.** Check your internet connection and run it again. It only
+  needs to download once.
 
 ## More
 

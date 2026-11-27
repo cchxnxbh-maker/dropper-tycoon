@@ -1,3 +1,6 @@
-# Lint rules. Task 4 adds the project rules from plan section 7.4
-# (rejecting wait, spawn, delay and math.random) as part of the check.
-std = "roblox"
+# Lint rules (ADR 0015). `project.yml` bans wait, spawn, delay and math.random by marking them deprecated.
+# It comes first because, when two libraries define the same name, Selene keeps the first one.
+std = "project+roblox"
+
+[lints]
+deprecated = "deny"

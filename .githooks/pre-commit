@@ -1,0 +1,4 @@
+#!/bin/sh
+# Runs the check before every commit and refuses the commit if it fails (plan section 7.5).
+# Turned on once per clone with: git config core.hooksPath .githooks
+exec lune run check
