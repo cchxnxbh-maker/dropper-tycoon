@@ -1,0 +1,13 @@
+[package]
+name = "cchxnxbh-maker/dropper-tycoon"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+private = true
+
+# Wally versions are caret ranges: "2.0.0" means any 2.x. wally.lock records the exact versions.
+# Adding a dependency needs a decision record (plan section 7.1).
+[dependencies]
+Signal = "sleitnick/signal@2.0.0"
+Trove = "sleitnick/trove@1.1.0"
+t = "osyrisrblx/t@3.0.0"

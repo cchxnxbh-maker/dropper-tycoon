@@ -1,0 +1,9 @@
+# Tool versions for this project. Run `rokit install` in this folder to get them.
+# Pins were updated to the current releases at setup (2026-11-27). Change them only on purpose.
+[tools]
+rojo = "rojo-rbx/rojo@7.7.1"
+wally = "upliftgames/wally@0.3.2"
+lune = "lune-org/lune@0.11.1"
+selene = "kampfkarren/selene@0.31.0"
+stylua = "johnnymorganz/stylua@2.6.0"
+# luau-lsp is added in task 4 (the check) with `rokit add johnnymorganz/luau-lsp`, which pins the current release.
