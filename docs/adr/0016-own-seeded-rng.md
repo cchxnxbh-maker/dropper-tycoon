@@ -1,8 +1,8 @@
 # 0016. Our own seeded random generator (xoshiro128**)
 
-- **Status:** Proposed (becomes Accepted when Daniel approves the task 6 merge)
+- **Status:** Accepted
 - **Date:** 2026-11-27
-- **Decided by:** Claude's recommendation, for Daniel to accept
+- **Decided by:** Claude's recommendation, accepted by Daniel
 
 ## Context
 
