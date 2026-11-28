@@ -18,8 +18,9 @@ Scheduler.every("FactorySim", Config.Tuning.Timing.simRate, step)
 | File | Holds | Rules (in `Schema.luau`) |
 | --- | --- | --- |
 | `Build.luau` | `version`, the build version on every log line | Three whole numbers, like `1.2.3` |
-| `Flags.luau` | `Features` switches, `Log` levels (`default` and per-tag `tags`) | Feature names camelCase and true or false; tag names PascalCase; levels debug, info, warn or error |
-| `Tuning.luau` | `Timing.simRate`, `Timing.maxCatchUpSteps` | Whole numbers, 1 to 60 and 1 to 30 |
+| `Flags.luau` | `Features` switches (`studioAbuseSuite`), `Log` levels (`default` and per-tag `tags`) | Feature names camelCase and true or false; tag names PascalCase; levels debug, info, warn or error |
+| `Tuning.luau` | `Timing.simRate`, `Timing.maxCatchUpSteps`; `Network` limits (text length, table depth and width, strike window and kick threshold, client rate share; see `Network.md`) | Whole numbers, 1 to 60 and 1 to 30; each `Network` value has its own range |
+| `Strings.luau` | Player-facing text by system and key, such as `Net.kicked` | System names PascalCase, keys camelCase, text not empty and at most 500 characters |
 | `Buildables/` | One file per machine (none yet), indexed by `gen-index` | Each entry's `id` equals its file name |
 
 The ranges in `Schema.luau` are limits on what is sensible, not tuning values. Tuning values stay in the data files.

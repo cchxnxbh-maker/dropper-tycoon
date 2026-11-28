@@ -11,8 +11,11 @@
 local Types = require("../Types/Config")
 
 local Flags: Types.Flags = {
-	-- Feature switches, named in camelCase. None yet: each risky feature adds its switch here, set to false.
-	Features = {},
+	-- Feature switches, named in camelCase. Each risky feature adds its switch here, set to false.
+	Features = {
+		-- Runs the network abuse suite at the start of every Studio playtest (task 8). Never runs on real servers.
+		studioAbuseSuite = true,
+	},
 	-- Levels are debug, info, warn and error. Tags not listed use the default.
 	Log = {
 		default = "info",

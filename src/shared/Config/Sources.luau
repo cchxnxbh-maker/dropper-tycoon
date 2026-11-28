@@ -13,6 +13,7 @@ local Sources: Types.Config = {
 	Build = require("./Build"),
 	Flags = require("./Flags"),
 	Tuning = require("./Tuning"),
+	Strings = require("./Strings"),
 	Buildables = require("./Buildables"),
 }
 

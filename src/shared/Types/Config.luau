@@ -29,13 +29,25 @@ export type Tuning = {
 		simRate: number,
 		maxCatchUpSteps: number,
 	},
+	Network: {
+		maxStringLength: number,
+		maxTableDepth: number,
+		maxTableEntries: number,
+		strikeWindowSeconds: number,
+		kickAfterStrikes: number,
+		clientRateShare: number,
+	},
 }
+
+-- Player-facing text: system name, then key, then the text.
+export type Strings = { [string]: { [string]: string } }
 
 -- Everything the loader returns. Registries map an entry's ID (its file name) to its definition.
 export type Config = {
 	Build: Build,
 	Flags: Flags,
 	Tuning: Tuning,
+	Strings: Strings,
 	Buildables: { [string]: any },
 }
 
