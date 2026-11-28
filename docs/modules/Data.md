@@ -61,7 +61,7 @@ Saves hold IDs and counts, never prices or rates, so a rebalance never needs a m
 | Studio, any other place | ProfileStore's mock store |
 
 The mock store forgets everything when the playtest stops. To save in Studio, open the Dev place, then
-**File > Game Settings > Security > Enable Studio Access to API Services**, and save.
+**File > Experience Settings > Security > Enable Studio Access to API Services**, and save (older Studio versions call it Game Settings; stop any running playtest first).
 
 ## Vendored ProfileStore
 
