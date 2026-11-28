@@ -24,7 +24,7 @@ new record that supersedes it.
 | [0016](0016-own-seeded-rng.md) | Our own seeded random generator (xoshiro128**) | Accepted | Claude's recommendation, accepted by Daniel |
 | [0017](0017-config-loading-and-validation.md) | How config is loaded, checked and indexed | Accepted | Claude's recommendation, accepted by Daniel |
 | [0018](0018-network-layer-details.md) | How the network layer is built (payload rules use Validate instead of `t`, updating 0011) | Accepted | Claude's recommendation, accepted by Daniel |
-| [0019](0019-save-data-layer.md) | How saves are loaded, checked and changed | Proposed | Claude's recommendation, awaiting Daniel |
+| [0019](0019-save-data-layer.md) | How saves are loaded, checked and changed | Accepted | Claude's recommendation, accepted by Daniel |
 
 "Build plan" means the plan's recommendation, which Daniel accepted when he approved the plan.
 

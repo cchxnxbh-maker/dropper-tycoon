@@ -1,8 +1,8 @@
 # 0019. How saves are loaded, checked and changed
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-28
-- **Decided by:** Claude's recommendation, awaiting Daniel
+- **Decided by:** Claude's recommendation, accepted by Daniel
 
 ## Context
 
