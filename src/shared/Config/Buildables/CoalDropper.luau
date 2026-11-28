@@ -1,5 +1,5 @@
 --!strict
--- CoalDropper: the first dropper, at the start of the belt. Free, so cash starts flowing.
+-- CoalDropper: the first dropper, next to the collector so cash arrives at once. Free.
 -- Every number is a starting value for the balance pass. Rules: `Config/Schema.luau` and the kind's own file in
 -- `Logic/Kinds/Dropper.luau`.
 
@@ -12,8 +12,9 @@ local CoalDropper: Types.BuildableDef = {
 	price = 0,
 	requires = { "BasicCollector" },
 	line = "Main",
-	params = { itemValue = 2, interval = 2, at = 5 },
-	pad = { x = -10, z = -10 },
+	params = { itemValue = 1, interval = 2, at = 385, perLevel = 0.5 },
+	pad = { x = -24, z = -36 },
+	levelPrice = 7,
 }
 
 return CoalDropper

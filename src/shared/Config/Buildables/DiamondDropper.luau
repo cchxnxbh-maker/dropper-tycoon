@@ -1,5 +1,5 @@
 --!strict
--- DiamondDropper: the last tier 1 dropper. Its items are worth the most.
+-- DiamondDropper: the best dropper, at the very start of the belt, so its items pass every arch.
 -- Every number is a starting value for the balance pass. Rules: `Config/Schema.luau` and the kind's own file in
 -- `Logic/Kinds/Dropper.luau`.
 
@@ -9,11 +9,12 @@ local DiamondDropper: Types.BuildableDef = {
 	id = "DiamondDropper",
 	kind = "Dropper",
 	tier = 1,
-	price = 22000,
-	requires = { "GoldDropper", "BigCollector" },
+	price = 1200000,
+	requires = { "Plater" },
 	line = "Main",
-	params = { itemValue = 250, interval = 5, at = 52 },
-	pad = { x = 50, z = -26 },
+	params = { itemValue = 1900, interval = 4, at = 30, perLevel = 0.5 },
+	pad = { x = 24, z = -8 },
+	levelPrice = 360000,
 }
 
 return DiamondDropper

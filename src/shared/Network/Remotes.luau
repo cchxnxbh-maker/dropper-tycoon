@@ -58,8 +58,9 @@ local Remotes = Net.define({
 			testCounter = Validate.number({ integer = true, min = 0 }),
 		}),
 	}),
-	-- The player stepped on a purchase pad (task 12). The server checks the machine is available, the character is at
-	-- its pad and the cash is there; the client never says a price. A pad touch can fire a few times in a row.
+	-- The player stepped on a purchase pad (task 12). The pad sells its machine, or once owned its next level (ADR
+	-- 0023). The server checks what the pad sells, that the character is at it and the cash is there; the client never
+	-- says a price. A pad touch can fire a few times in a row, and standing on a level pad keeps asking.
 	RequestPurchase = Net.toServer({
 		payload = Validate.record({ buildableId = buildableId }),
 		rate = { burst = 6, perSecond = 3 },
@@ -80,12 +81,13 @@ local Remotes = Net.define({
 			serverTime = Validate.number({ min = 0 }),
 		}),
 	}),
-	-- The player's factory, sent on join and after each purchase: what they own, and the numbers the client needs to
+	-- The player's factory, sent on join and after each purchase: what they own and at which level, and the numbers the client needs to
 	-- run the same simulation to draw items (ADR 0021). `tick` was the simulation step at `serverTime`
 	-- (`workspace:GetServerTimeNow()`); `starts` is `FactorySim.starts`.
 	FactoryState = Net.toClient({
 		payload = Validate.record({
 			owned = idMap(Validate.boolean()),
+			levels = idMap(Validate.number({ integer = true, min = 1 })),
 			starts = idMap(Validate.number({ integer = true, min = 0 })),
 			tick = Validate.number({ integer = true, min = 0 }),
 			serverTime = Validate.number({ min = 0 }),

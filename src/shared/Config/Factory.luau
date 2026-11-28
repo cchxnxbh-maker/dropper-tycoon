@@ -1,7 +1,8 @@
 --!strict
 -- Factory: where the production line sits on every plot, and how the grey-box machines and items look (Phase 1).
 -- Positions are in studs from the plot's pivot, the centre of its top face. Negative z is towards the front edge,
--- where the spawn pad is; the line runs along +x near the back half, and the purchase pads sit between.
+-- where the spawn pad is. The line winds back and forth across the back half (ADR 0023), ending near the front with
+-- the collector, and the purchase pads fill the front half.
 -- Colours are hex strings so the file stays plain data that Lune can read.
 -- Ranges and fit (everything on the plot, nothing overlapping) are checked by `Config/Schema.luau`.
 --
@@ -9,16 +10,23 @@
 --
 -- Usage:
 --     local Config = require("../Config")
---     local length = Config.Factory.line.length
+--     local height = Config.Factory.line.height
 
 local Types = require("../Types/Config")
 
 local Factory: Types.Factory = {
 	line = {
-		-- Where the conveyor begins. Droppers and upgraders say how far along it they sit.
-		start = { x = -50, z = 30 },
-		-- Length of the conveyor. The collector sits right after its end.
-		length = 90,
+		-- The conveyor's corners, in order. It runs straight from each to the next, along x or z. Droppers and upgraders
+		-- say how far along it they sit; the collector sits just past the last corner. Three rows of 120 studs joined
+		-- by two bends of 20 make 400 studs: the back row from 0 to 120, the middle from 140 to 260, the front from 280.
+		path = {
+			{ x = 60, z = 55 },
+			{ x = -60, z = 55 },
+			{ x = -60, z = 35 },
+			{ x = 60, z = 35 },
+			{ x = 60, z = 15 },
+			{ x = -60, z = 15 },
+		},
 		-- Height of the belt's top above the plot.
 		height = 3,
 		-- Width of the belt.
@@ -41,7 +49,8 @@ local Factory: Types.Factory = {
 	-- A character may stand this far beyond a pad's edge and still buy from it, to allow for lag (plan section 4.4).
 	padReach = 8,
 	-- Standing on a pad you cannot afford asks again after this many seconds, so it buys once the cash is there.
-	padRetrySeconds = 1,
+	-- On a pad that sells levels, staying on it keeps buying them at this pace.
+	padRetrySeconds = 0.5,
 	-- Box items one dropper may show at once. Draw-side only.
 	maxItemsPerDropper = 40,
 	colors = {

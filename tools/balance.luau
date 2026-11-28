@@ -1,6 +1,7 @@
 --!strict
 -- balance: plays a fresh factory from config and fails if the pacing targets break (plan section 5.2, guard 3; ADR
--- 0022). Prints one line per purchase: when it happened, how long the player saved for it, and the income after.
+-- 0022, ADR 0023). Prints one line per new machine: when it was bought, the longest the player saved for anything
+-- since the line before, how many levels they bought in between, and the income after.
 --
 -- The simulation is `src/shared/Logic/Balance.luau`, run on the real config, so this shows the game's own numbers.
 --
@@ -24,19 +25,32 @@ end
 ]]
 function balance.run(): boolean
 	local report = Balance.run(Config)
-	print("  time   waited  machine              price      income after")
+	print("  time   longest  levels  machine              price      income after")
+	local longest = 0
+	local levels = 0
+	local slowest = 0
 	for _, buy in report.buys do
-		print(
-			string.format(
-				"  %s  %5ds  %-20s %-10s +%s/s",
-				clock(buy.at),
-				math.round(buy.waited),
-				buy.id,
-				"$" .. NumberFormat.cash(buy.price),
-				NumberFormat.rate(buy.rate)
+		longest = math.max(longest, buy.waited)
+		slowest = math.max(slowest, buy.waited)
+		if buy.upgrade then
+			levels += 1
+		else
+			print(
+				string.format(
+					"  %s  %5ds  %6d  %-20s %-10s +%s/s",
+					clock(buy.at),
+					math.round(longest),
+					levels,
+					buy.id,
+					"$" .. NumberFormat.cash(buy.price),
+					NumberFormat.rate(buy.rate)
+				)
 			)
-		)
+			longest = 0
+			levels = 0
+		end
 	end
+	print(`  {#report.buys} purchases. Longest wait {math.round(slowest)} s.`)
 	print(`  Everything bought in {clock(report.seconds)} (walking time not counted).`)
 	local problems = Balance.problems(report, Config.Economy)
 	if #problems > 0 then

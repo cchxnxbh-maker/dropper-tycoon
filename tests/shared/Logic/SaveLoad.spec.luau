@@ -73,7 +73,7 @@ describe("Save fixtures", function()
 				meta = { joins = 0, firstJoin = 0, lastJoin = 0 },
 				dev = { testCounter = 0 },
 				economy = { cash = 0 },
-				factory = { owned = {} },
+				factory = { owned = {}, levels = {} },
 			})
 		end
 	end)
@@ -85,15 +85,24 @@ describe("Save fixtures", function()
 			expect(result.data.meta).toEqual(Fixtures.v002.meta)
 			expect(result.data.dev).toEqual(Fixtures.v002.dev)
 			expect(result.data.economy).toEqual({ cash = 0 })
-			expect(result.data.factory).toEqual({ owned = {} })
+			expect(result.data.factory).toEqual({ owned = {}, levels = {} })
 		end
 	end)
 
-	it("refuses negative cash and owned entries that are not true or false", function()
-		local data = table.clone(Fixtures.v003) :: any
+	it("refuses negative cash, owned entries that are not true or false, and levels below 2", function()
+		local data = table.clone(Fixtures.v004) :: any
 		data.economy = { cash = -1 }
-		data.factory = { owned = { CoalDropper = 1 } }
-		expect(#SaveSchema.validate(data)).toBe(2)
+		data.factory = { owned = { CoalDropper = 1 }, levels = { CoalDropper = 1, CopperDropper = 2.5 } }
+		expect(#SaveSchema.validate(data)).toBe(4)
+	end)
+
+	it("starts a version 3 save's machines at level 1 and keeps what they own", function()
+		local result = SaveLoad.prepare(Fixtures.v003, Migrations, SaveSchema)
+		expect(result.kind).toBe("ready")
+		if result.kind == "ready" then
+			expect(result.data.factory).toEqual({ owned = Fixtures.v003.factory.owned, levels = {} })
+			expect(result.data.economy).toEqual(Fixtures.v003.economy)
+		end
 	end)
 
 	it("keeps a version 1 save's values and starts its test counter at 0", function()

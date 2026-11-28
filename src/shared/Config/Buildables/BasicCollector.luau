@@ -12,8 +12,9 @@ local BasicCollector: Types.BuildableDef = {
 	price = 0,
 	requires = { "StarterConveyor" },
 	line = "Main",
-	params = { multiplier = 1 },
-	pad = { x = -30, z = -10 },
+	params = { multiplier = 1, perLevel = 0.1 },
+	pad = { x = -40, z = -36 },
+	levelPrice = 44,
 }
 
 return BasicCollector

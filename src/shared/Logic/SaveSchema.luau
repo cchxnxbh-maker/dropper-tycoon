@@ -41,8 +41,10 @@ export type Economy = {
 }
 
 -- The machines the player has bought, by ID, owned by `PurchaseService`. Version 3 adds it. IDs only, never prices.
+-- Version 4 adds `levels`: the level of each owned machine raised above 1 (ADR 0023). A machine not listed is level 1.
 export type Factory = {
 	owned: { [string]: boolean },
+	levels: { [string]: number },
 }
 
 export type SaveData = {
@@ -56,9 +58,10 @@ export type SaveData = {
 local SaveSchema = {}
 
 -- The version this build writes. A save with a higher number was written by a newer build and is refused.
-SaveSchema.CURRENT_VERSION = 3 -- const: the schema version, raised by hand with each migration
+SaveSchema.CURRENT_VERSION = 4 -- const: the schema version, raised by hand with each migration
 
 local count = Validate.number({ integer = true, min = 0 })
+local machineId = Validate.string({ pattern = "^%u%w*$", hint = "a buildable ID", maxLength = 40 }) -- const: same limit as buildable IDs in config
 
 SaveSchema.rule = Validate.record({
 	schemaVersion = Validate.number({
@@ -79,10 +82,9 @@ SaveSchema.rule = Validate.record({
 		cash = Validate.number({ min = 0 }),
 	}),
 	factory = Validate.record({
-		owned = Validate.map(
-			Validate.string({ pattern = "^%u%w*$", hint = "a buildable ID", maxLength = 40 }), -- const: same limit as buildable IDs in config
-			Validate.boolean()
-		),
+		owned = Validate.map(machineId, Validate.boolean()),
+		-- The top level is a tuning value and may change, so the save only refuses what can never be right.
+		levels = Validate.map(machineId, Validate.number({ integer = true, min = 2 })),
 	}),
 })
 

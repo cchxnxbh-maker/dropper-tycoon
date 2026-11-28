@@ -1,5 +1,5 @@
 --!strict
--- CopperDropper: the second dropper. Its items are worth more.
+-- CopperDropper: the second dropper.
 -- Every number is a starting value for the balance pass. Rules: `Config/Schema.luau` and the kind's own file in
 -- `Logic/Kinds/Dropper.luau`.
 
@@ -9,11 +9,12 @@ local CopperDropper: Types.BuildableDef = {
 	id = "CopperDropper",
 	kind = "Dropper",
 	tier = 1,
-	price = 30,
+	price = 27,
 	requires = { "CoalDropper" },
 	line = "Main",
-	params = { itemValue = 5, interval = 2.5, at = 15 },
-	pad = { x = 10, z = -10 },
+	params = { itemValue = 3, interval = 2.5, at = 370, perLevel = 0.5 },
+	pad = { x = -8, z = -36 },
+	levelPrice = 27,
 }
 
 return CopperDropper

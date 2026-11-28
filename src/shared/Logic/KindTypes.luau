@@ -17,6 +17,8 @@ export type Def = {
 	id: string,
 	kind: string,
 	params: { [string]: number },
+	-- The machine's level, 1 when absent. A kind with a `perLevel` param grows by it for each level above 1.
+	level: number?,
 }
 
 export type DropperSpec = { id: string, at: number, itemValue: number, interval: number }
@@ -35,6 +37,8 @@ export type Kind = {
 	kind: string,
 	-- Checks a machine's `params` table.
 	params: Validate.Rule,
+	-- True when the kind reads `perLevel`, so its machines may have levels (ADR 0023).
+	levels: boolean,
 	-- Adds the machine to the line. Called once per owned machine, in ID order.
 	apply: (build: LineBuild, def: Def) -> (),
 }

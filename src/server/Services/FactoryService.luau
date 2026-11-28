@@ -15,7 +15,7 @@
 --     FactoryService.init()
 --     FactoryService.start()
 -- From PurchaseService:
---     FactoryService.rebuild(player, ownedIds)
+--     FactoryService.rebuild(player, ownedIds, levels)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -23,13 +23,20 @@ local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local EconomyService = require(script.Parent.EconomyService)
+local FactoryLayout = require(ReplicatedStorage.Shared.Logic.FactoryLayout)
 local FactorySim = require(ReplicatedStorage.Shared.Logic.FactorySim)
+local Levels = require(ReplicatedStorage.Shared.Logic.Levels)
 local Remotes = require(ReplicatedStorage.Shared.Network.Remotes)
 local Scheduler = require(ReplicatedStorage.Shared.Util.Scheduler)
 local ServerNet = require(script.Parent.Parent.Net.ServerNet)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
-type Running = { player: Player, sim: FactorySim.Sim, owned: { [string]: boolean } }
+type Running = {
+	player: Player,
+	sim: FactorySim.Sim,
+	owned: { [string]: boolean },
+	levels: { [string]: number },
+}
 
 local STEP_NAME = "FactorySim"
 
@@ -69,6 +76,7 @@ end
 local function sendState(entry: Running)
 	ServerNet.send(entry.player, Remotes.FactoryState, {
 		owned = entry.owned,
+		levels = entry.levels,
 		starts = FactorySim.starts(entry.sim),
 		tick = entry.sim.tick,
 		serverTime = Workspace:GetServerTimeNow(),
@@ -95,25 +103,25 @@ function FactoryService.start()
 end
 
 --[[
-	Builds the player's simulation again from the machines they own, keeping its step count and the start of every
-	dropper already running, so items on the belt still arrive. Then tells their client.
+	Builds the player's simulation again from the machines they own and their levels, keeping its step count and the
+	start of every dropper already running, so items on the belt still arrive. Then tells their client.
 	@param player whose factory
 	@param ownedIds the IDs of every machine they own; IDs with no buildable file are skipped
+	@param levels saved levels by machine ID; a machine not listed is level 1
 ]]
-function FactoryService.rebuild(player: Player, ownedIds: { string })
-	-- Machine definitions carry more fields than the sim reads; it takes them as they are.
-	local defs: { any } = {}
+function FactoryService.rebuild(player: Player, ownedIds: { string }, levels: { [string]: number })
+	local defs: { any } = Levels.defs(Config.Buildables, ownedIds, levels)
 	local owned: { [string]: boolean } = {}
-	for _, id in ownedIds do
-		local def = Config.Buildables[id]
-		if def then
-			table.insert(defs, def)
-			owned[id] = true
+	local shownLevels: { [string]: number } = {}
+	for _, def in defs do
+		owned[def.id] = true
+		if def.level > 1 then
+			shownLevels[def.id] = def.level
 		end
 	end
 	local _, previous = find(player)
 	local options: FactorySim.Options = {
-		length = Config.Factory.line.length,
+		length = FactoryLayout.length(Config.Factory),
 		rate = Config.Tuning.Timing.simRate,
 		tick = if previous then previous.sim.tick else 0,
 		starts = if previous then FactorySim.starts(previous.sim) else nil,
@@ -123,9 +131,10 @@ function FactoryService.rebuild(player: Player, ownedIds: { string })
 	if previous then
 		previous.sim = sim
 		previous.owned = owned
+		previous.levels = shownLevels
 		entry = previous
 	else
-		entry = { player = player, sim = sim, owned = owned }
+		entry = { player = player, sim = sim, owned = owned, levels = shownLevels }
 		table.insert(running, entry)
 	end
 	sendState(entry)

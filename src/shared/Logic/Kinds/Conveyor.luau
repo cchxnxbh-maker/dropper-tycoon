@@ -14,6 +14,7 @@ local Conveyor: KindTypes.Kind = {
 	params = Validate.record({
 		speed = Validate.number({ min = 0.5, max = 200 }), -- const: sanity limit for config checks, not a tuning value
 	}),
+	levels = false,
 	apply = function(build, def)
 		build.speed = math.max(build.speed, def.params.speed)
 	end,

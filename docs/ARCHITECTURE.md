@@ -83,7 +83,7 @@ signals. Nobody reads another module's tables.
 | Remote instances, rate buckets, strikes | `ServerNet` | none | none | Built (ADR 0018) |
 | Cash | `EconomyService` | `getCash`, `cashChanged` | `add`, `trySpend` | Built (ADR 0021) |
 | Running factory simulation | `FactoryService` | `getIncomeRate` | `rebuild` | Built (ADR 0021) |
-| Owned buildables | `PurchaseService` | `owns` | `tryPurchase` | Built (ADR 0021) |
+| Owned buildables and their levels | `PurchaseService` | `owns` | `tryPurchase` | Built (ADR 0021, ADR 0023) |
 | Multipliers, prestige points, perks, tiers | `PrestigeService` | `getPoints`, `hasPerk` | `rebirth`, `tryBuyPerk` | Phase 2 |
 | Client copy of player data | `ClientStore` | `get(key)`, `changed(key, fn)` | Only `Net/StateSync` | Built, two entries (ADR 0021) |
 | Client copy of the factory sim | `Net/FactoryMirror` | `sim()`, `tickAt(serverTime)` | Rebuilt from each `FactoryState` | Built (ADR 0022) |
@@ -140,18 +140,19 @@ valid. Session states are Loading, Playing, Releasing and Ended (`Logic/SessionS
 Every schema change adds a migration and a fixture in `tests/fixtures/saves/` (plan section 12.1). In Studio the real
 store is used only on the Dev place with API access on; otherwise a mock store.
 
-## The factory (ADR 0021)
+## The factory (ADR 0021, ADR 0023)
 
-Each player's factory is a `Logic/FactorySim`: one line built from the machines they own, each kind adding itself
-from `Logic/Kinds/`. Items are not stored. A dropper drops on steps that are multiples of its interval and each item
+Each player's factory is a `Logic/FactorySim`: one line built from the machines they own at their levels
+(`Logic/Levels`), each kind adding itself from `Logic/Kinds/`. The line is a winding path of straight runs (400
+studs in tier 1). Items are not stored. A dropper drops on steps that are multiples of its interval and each item
 arrives a fixed number of steps later, so the step that pays is a formula. FactoryService steps every sim at 10 a
 second and adds what arrives through EconomyService. The client is sent the numbers to run the same sim
 (`FactoryState`, mirrored by `Net/FactoryMirror`) and draws box items itself; no item crosses the network. The HUD's
 cash counter is predicted from the same mirror between server updates (`FactorySim.earnedBetween`,
 `Logic/CashDisplay`): small gaps ease, big ones snap. Grey-box machines and purchase pads are
 built by PlotService from `Logic/FactoryLayout` and `Config/Factory.luau`. Buying: the client asks when its character
-is on a pad; PurchaseService checks `Logic/Purchase` (exists, not owned, requirements, distance, cash), spends, saves,
-places the machine and rebuilds. Details: `docs/modules/Factory.md`, `docs/modules/Economy.md`.
+is on a pad; a pad sells its machine, then the machine's next level. PurchaseService checks `Logic/Purchase` (what
+the pad sells, requirements, distance, cash), spends, saves, places the machine and rebuilds. Details: `docs/modules/Factory.md`, `docs/modules/Economy.md`.
 
 ## Timing (plan section 4.1)
 
@@ -196,3 +197,4 @@ run the same command. Details: `docs/modules/check.md`.
 | Buildables name a model in ServerStorage | Buildables give a pad position; grey boxes built by code | No art until Phase 2 (ADR 0021) |
 | Items move along conveyor paths | Item positions come from a formula, no item list | No allocation per step, exact income rate (ADR 0021) |
 | ClientStore with path patches | Two entries, cash and factory | Enough for Phase 1 (backlog B-3) |
+| Twelve tier 1 machines, a straight belt | 24 machines with levels on a 400-stud winding belt | The first fun gate found the waits too long (ADR 0023) |

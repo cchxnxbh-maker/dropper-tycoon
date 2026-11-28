@@ -28,9 +28,10 @@ new record that supersedes it.
 | [0020](0020-plots-streaming-and-dev-panel.md) | The six-plot place: plots built by code, streaming in the Rojo project, a dev panel | Accepted | Claude's recommendation, accepted by Daniel |
 | [0021](0021-first-factory.md) | How the first factory works: periodic items, grey boxes by code, pads, in-memory cash | Accepted | Claude's recommendation, accepted by Daniel |
 | [0022](0022-balance-tool-and-cash-prediction.md) | The balance tool joins the check; the cash counter is predicted from the client's factory mirror | Accepted | Claude's recommendation, accepted by Daniel |
+| [0023](0023-machine-levels-and-winding-line.md) | Machine levels on their pads, a winding 400-stud line, 24 machines and faster pacing | Proposed | Daniel's request after the fun gate; details are Claude's recommendation, waiting for Daniel |
 
 "Build plan" means the plan's recommendation, which Daniel accepted when he approved the plan.
 
 ## Still open
 
-- **Theme and name.** Needed before art starts in Phase 2. When decided, it gets record number 0023.
+- **Theme and name.** Needed before art starts in Phase 2. When decided, it gets the next free record number (0024 today).

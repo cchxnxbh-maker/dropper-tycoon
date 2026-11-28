@@ -94,8 +94,7 @@ local rules = Validate.record({
 	}),
 	Factory = Validate.record({
 		line = Validate.record({
-			start = point,
-			length = studs,
+			path = Validate.list(point),
 			height = Validate.number({ min = 0.5, max = 100 }),
 			width = Validate.number({ min = 0.5, max = 50 }),
 		}),
@@ -123,6 +122,10 @@ local rules = Validate.record({
 	Economy = Validate.record({
 		maxCash = Validate.number({ min = 1, max = 1e15 }),
 		devCashGift = Validate.number({ min = 1, max = 1e15 }),
+		levels = Validate.record({
+			maxLevel = Validate.number({ integer = true, min = 1, max = 100 }),
+			priceGrowth = Validate.number({ min = 1, max = 10 }),
+		}),
 		pacing = Validate.record({
 			maxWaitSeconds = Validate.number({ min = 1, max = 86400 }),
 			minTotalMinutes = Validate.number({ min = 0, max = 10000 }),
@@ -146,6 +149,7 @@ local rules = Validate.record({
 		line = Validate.string({ oneOf = { "Main" } }),
 		params = Validate.map(Validate.string({ pattern = "^%l%w*$", hint = "like itemValue" }), Validate.number()),
 		pad = point,
+		levelPrice = Validate.optional(Validate.number({ min = 0, max = 1e15 })),
 	})),
 })
 
@@ -175,8 +179,8 @@ function Schema.validate(sources: any): { string }
 end
 
 --[[
-	Checks what spans buildable files: each kind's params, requirements that exist and never loop, and a name in
-	`Strings.Buildables` for every machine.
+	Checks what spans buildable files: each kind's params, levels only on kinds that have them, requirements that
+	exist and never loop, and a name in `Strings.Buildables` for every machine.
 	@param sources the raw config tables, already passing the per-field rules
 	@param ids every buildable ID, sorted
 	@return one line per problem
@@ -190,6 +194,9 @@ function Schema.buildableProblems(sources: any, ids: { string }): { string }
 		local kind = (Kinds :: { [string]: KindTypes.Kind })[def.kind]
 		for _, problem in Validate.run(def.params, kind.params, `Buildables.{id}.params`) do
 			table.insert(problems, problem)
+		end
+		if def.levelPrice ~= nil and not kind.levels then
+			table.insert(problems, `Buildables.{id}.levelPrice: a {def.kind} has no levels; remove it`)
 		end
 		for _, required in def.requires do
 			if buildables[required] == nil then

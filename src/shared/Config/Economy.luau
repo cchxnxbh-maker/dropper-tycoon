@@ -15,11 +15,18 @@ local Economy: Types.Economy = {
 	-- Cash stops rising at this amount in one rebirth cycle (ADR 0009). The balance tool keeps real play far below it.
 	maxCash = 1e15,
 	-- Added by the dev panel's Give cash button, for testing purchases quickly.
-	devCashGift = 1000,
+	devCashGift = 100000,
+	-- Machine levels (ADR 0023). A bought machine's pad sells its next level, up to `maxLevel`; each level costs
+	-- `priceGrowth` times the one before. Level 2's price is the machine's own `levelPrice`.
+	levels = {
+		maxLevel = 10,
+		priceGrowth = 1.6,
+	},
 	-- Pacing targets the balance tool checks on every run of the check (plan section 5.2, ADR 0022). Starting values.
 	pacing = {
-		-- No purchase should take longer than this to save up for.
-		maxWaitSeconds = 150,
+		-- No purchase, machine or level, should take longer than this to save up for. The first fun gate found waits of
+		-- over two minutes too long (ADR 0023).
+		maxWaitSeconds = 40,
 		-- Buying all of tier 1 should fill most of a 20-minute first session, without dragging past it.
 		minTotalMinutes = 12,
 		maxTotalMinutes = 25,

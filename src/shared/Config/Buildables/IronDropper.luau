@@ -1,5 +1,5 @@
 --!strict
--- IronDropper: the third dropper, heavier items.
+-- IronDropper: a dropper on the front row.
 -- Every number is a starting value for the balance pass. Rules: `Config/Schema.luau` and the kind's own file in
 -- `Logic/Kinds/Dropper.luau`.
 
@@ -9,11 +9,12 @@ local IronDropper: Types.BuildableDef = {
 	id = "IronDropper",
 	kind = "Dropper",
 	tier = 1,
-	price = 500,
-	requires = { "CopperDropper" },
+	price = 620,
+	requires = { "TinDropper" },
 	line = "Main",
-	params = { itemValue = 12, interval = 3, at = 25 },
-	pad = { x = 50, z = -10 },
+	params = { itemValue = 16, interval = 3, at = 330, perLevel = 0.5 },
+	pad = { x = 40, z = -36 },
+	levelPrice = 230,
 }
 
 return IronDropper

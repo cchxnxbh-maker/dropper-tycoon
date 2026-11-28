@@ -32,16 +32,22 @@ EconomyService holds each player's cash in memory while they play and writes it 
 own schedule. The client gets `CashSync` at most `Tuning.Sync.cashPerSecond` times a second, only when cash changed.
 Cash is never negative and never above `Economy.maxCash` (1e15, ADR 0009).
 
-## Buying a machine
+## Buying a machine or a level
 
-1. A pad shows for each machine that is not owned and whose requirements are all owned.
+1. A pad shows for each machine that is not owned and whose requirements are all owned, and stays after it is bought
+   to sell the machine's next level, until `Economy.levels.maxLevel` (ADR 0023). `Purchase.offer` says what a pad
+   sells; the client uses it for the labels and the server for the check.
 2. The player steps on it. PadController sends `RequestPurchase { buildableId }`, and asks again every
-   `Factory.padRetrySeconds` while they stand there, so it buys the moment the cash is there.
+   `Factory.padRetrySeconds` while they stand there, so it buys the moment the cash is there, and on a level pad keeps
+   buying levels.
 3. ServerNet checks the payload, rate and session; PurchaseService asks `Purchase.check`: the machine exists, is not
-   owned, its requirements are owned, the character is within `FactoryLayout.padRadius` of the pad, and the cash is
-   there. A refusal is sent back as `PurchaseRefused`; the HUD shows "Not enough cash yet" for that one reason.
-4. Cash is spent (and saved), the machine is saved in `factory.owned`, its grey boxes are placed, the pads change and
-   the factory is rebuilt. If saving the machine fails, the cash is refunded.
+   owned (or, for a level, is owned, has levels and is below the top), its requirements are owned, the character is
+   within `FactoryLayout.padRadius` of the pad, and the cash is there. A refusal is sent back as `PurchaseRefused`; the HUD shows "Not enough cash yet" for that one reason.
+4. Cash is spent (and saved), the machine is saved in `factory.owned` (a level in `factory.levels`), its grey boxes
+   are placed, the pads change and the factory is rebuilt. If saving fails, the cash is refunded.
+
+Level prices: level 2 costs the machine's `levelPrice`, each next level `Economy.levels.priceGrowth` times the one
+before, rounded (`Logic/Levels.luau`).
 
 ## The client copy
 
@@ -56,12 +62,14 @@ server time to now. `Logic/CashDisplay` eases a gap up to `Tuning.Sync.cashEaseS
 ## Pacing
 
 `Economy.pacing` holds the targets `lune run balance` checks on every run of the check: no wait over
-`maxWaitSeconds`, and all of tier 1 bought in between `minTotalMinutes` and `maxTotalMinutes` (walking not
-counted). Every value is a starting value for playtests.
+`maxWaitSeconds` (40) for any purchase, machine or level, and every tier 1 machine bought in between
+`minTotalMinutes` and `maxTotalMinutes` (walking not counted). The simulated player buys the cheapest thing any pad
+sells. Today: longest wait 22 s, about 190 purchases, every machine in about 18 minutes. Every value is a starting
+value for playtests (ADR 0023).
 
 ## Known traps
 
 - A machine removed from config stays in old saves as an unknown ID; PurchaseService ignores it with a warning. Never
   rename an ID (plan section 5.2).
-- Handler refusals (`unknown`, `owned`, `locked`, `tooFar`) are logged as warnings but do not count a strike yet
+- Handler refusals (`unknown`, `owned`, `maxLevel`, `locked`, `tooFar`) are logged as warnings but do not count a strike yet
   (backlog B-1).

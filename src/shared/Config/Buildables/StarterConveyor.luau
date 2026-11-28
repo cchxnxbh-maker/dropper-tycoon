@@ -1,5 +1,5 @@
 --!strict
--- StarterConveyor: the first belt. Free, so the first pad teaches how pads work.
+-- StarterConveyor: the first belt, the whole winding line. Free, so the first pad teaches how pads work.
 -- Every number is a starting value for the balance pass. Rules: `Config/Schema.luau` and the kind's own file in
 -- `Logic/Kinds/Conveyor.luau`.
 
@@ -13,7 +13,7 @@ local StarterConveyor: Types.BuildableDef = {
 	requires = {},
 	line = "Main",
 	params = { speed = 8 },
-	pad = { x = -50, z = -10 },
+	pad = { x = -56, z = -36 },
 }
 
 return StarterConveyor
