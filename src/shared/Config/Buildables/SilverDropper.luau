@@ -12,8 +12,7 @@ local SilverDropper: Types.BuildableDef = {
 	price = 3300,
 	requires = { "Sorter" },
 	line = "Main",
-	params = { itemValue = 35, interval = 3, at = 300, perLevel = 0.5 },
-	pad = { x = -40, z = -22 },
+	params = { itemValue = 35, interval = 3, at = 320, perLevel = 0.5 },
 	levelPrice = 1100,
 }
 

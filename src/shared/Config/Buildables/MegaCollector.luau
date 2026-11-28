@@ -13,7 +13,7 @@ local MegaCollector: Types.BuildableDef = {
 	requires = { "Crystallizer" },
 	line = "Main",
 	params = { multiplier = 3, perLevel = 0.1 },
-	pad = { x = 56, z = -8 },
+	pad = { x = -40, z = -18 },
 	levelPrice = 900000,
 }
 

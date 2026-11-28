@@ -13,7 +13,6 @@ local DiamondDropper: Types.BuildableDef = {
 	requires = { "Plater" },
 	line = "Main",
 	params = { itemValue = 1900, interval = 4, at = 30, perLevel = 0.5 },
-	pad = { x = 24, z = -8 },
 	levelPrice = 360000,
 }
 

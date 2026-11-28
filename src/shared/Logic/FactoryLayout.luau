@@ -162,8 +162,8 @@ function FactoryLayout.boxes(def: Types.BuildableDef, factory: Types.Factory): {
 		}
 	elseif def.kind == "Dropper" then
 		local x, _, z, dx, dz = FactoryLayout.beltPoint(factory, def.params.at)
-		-- The post stands beside the belt, on its left as the belt runs.
-		local nx, nz = -dz, dx
+		-- The post stands beside the belt on its right as the belt runs, leaving the left for the pad.
+		local nx, nz = dz, -dx
 		local size = factory.dropperSize
 		local centre = line.height + factory.dropperLift + size / 2
 		local top = centre + size / 2
@@ -210,15 +210,33 @@ function FactoryLayout.rank(def: Types.BuildableDef): number?
 end
 
 --[[
+	Where a machine's purchase pad sits. A machine on the belt (with an `at` param) has its pad beside the belt next to
+	it, on the belt's left as it runs, `padGap` from the belt's edge. Any other machine uses its own `pad`.
+	@param def the machine's definition
+	@param factory the factory config
+	@return the pad's centre in plot studs; nil for a machine off the belt with no `pad` (config checks report it)
+]]
+function FactoryLayout.padPoint(def: Types.BuildableDef, factory: Types.Factory): Types.PlotPoint?
+	local at = def.params.at
+	if at == nil then
+		return def.pad
+	end
+	local x, _, z, dx, dz = FactoryLayout.beltPoint(factory, at)
+	local offset = factory.line.width / 2 + factory.padGap + factory.padSize / 2
+	return { x = x - dz * offset, z = z + dx * offset }
+end
+
+--[[
 	The purchase pad of one machine.
 	@param def the machine's definition
 	@param factory the factory config
-	@return the pad's box
+	@return the pad's box; at the plot's centre for a machine with no pad position, which config checks refuse
 ]]
 function FactoryLayout.pad(def: Types.BuildableDef, factory: Types.Factory): Box
 	local size = factory.padSize
 	local thickness = factory.padThickness
-	return box("Pad", def.pad.x, thickness / 2, def.pad.z, size, thickness, size, factory.colors.pad)
+	local point = FactoryLayout.padPoint(def, factory) or { x = 0, z = 0 }
+	return box("Pad", point.x, thickness / 2, point.z, size, thickness, size, factory.colors.pad)
 end
 
 --[[
@@ -339,8 +357,23 @@ function FactoryLayout.problems(
 	local spawnZ = -half + plots.spawnInset
 	local spawnClear = plots.spawnSize / 2 + padHalf
 	local rects = footprints(factory)
+	local pads: { [string]: Types.PlotPoint } = {}
+	for _, id in ids do
+		local point = FactoryLayout.padPoint(buildables[id], factory)
+		if point then
+			pads[id] = point
+		else
+			table.insert(
+				problems,
+				`Buildables.{id}.pad: missing; a machine that is not on the belt needs a pad position`
+			)
+		end
+	end
 	for index, id in ids do
-		local pad = buildables[id].pad
+		local pad = pads[id]
+		if pad == nil then
+			continue
+		end
 		if math.abs(pad.x) + padHalf > half or math.abs(pad.z) + padHalf > half then
 			table.insert(problems, `Buildables.{id}.pad: the pad must be on the plot`)
 		end
@@ -359,8 +392,12 @@ function FactoryLayout.problems(
 			end
 		end
 		for other = index + 1, #ids do
-			local otherPad = buildables[ids[other]].pad
-			if math.abs(pad.x - otherPad.x) < factory.padSize and math.abs(pad.z - otherPad.z) < factory.padSize then
+			local otherPad = pads[ids[other]]
+			if
+				otherPad
+				and math.abs(pad.x - otherPad.x) < factory.padSize
+				and math.abs(pad.z - otherPad.z) < factory.padSize
+			then
 				table.insert(problems, `Buildables.{id}.pad: the pad overlaps the pad of {ids[other]}`)
 			end
 		end

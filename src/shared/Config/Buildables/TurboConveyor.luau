@@ -13,7 +13,7 @@ local TurboConveyor: Types.BuildableDef = {
 	requires = { "Engraver" },
 	line = "Main",
 	params = { speed = 22 },
-	pad = { x = -24, z = -8 },
+	pad = { x = 24, z = -40 },
 }
 
 return TurboConveyor

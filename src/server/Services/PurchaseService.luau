@@ -107,7 +107,8 @@ end
 local function distanceToPad(player: Player, def: Types.BuildableDef): number
 	local character = player.Character
 	local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
-	local pad = PlotService.toWorld(player, def.pad)
+	local point = FactoryLayout.padPoint(def, Config.Factory)
+	local pad = if point then PlotService.toWorld(player, point) else nil
 	if root == nil or not root:IsA("BasePart") or pad == nil then
 		return math.huge
 	end

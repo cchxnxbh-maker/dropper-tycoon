@@ -12,8 +12,7 @@ local CoalDropper: Types.BuildableDef = {
 	price = 0,
 	requires = { "BasicCollector" },
 	line = "Main",
-	params = { itemValue = 1, interval = 2, at = 385, perLevel = 0.5 },
-	pad = { x = -24, z = -36 },
+	params = { itemValue = 1, interval = 2, at = 405, perLevel = 0.5 },
 	levelPrice = 7,
 }
 

@@ -12,8 +12,7 @@ local Sorter: Types.BuildableDef = {
 	price = 1900,
 	requires = { "FastConveyor" },
 	line = "Main",
-	params = { multiplier = 1.5, at = 340, perLevel = 0.1 },
-	pad = { x = -56, z = -22 },
+	params = { multiplier = 1.5, at = 360, perLevel = 0.1 },
 	levelPrice = 640,
 }
 

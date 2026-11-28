@@ -12,8 +12,7 @@ local IronDropper: Types.BuildableDef = {
 	price = 620,
 	requires = { "TinDropper" },
 	line = "Main",
-	params = { itemValue = 16, interval = 3, at = 330, perLevel = 0.5 },
-	pad = { x = 40, z = -36 },
+	params = { itemValue = 16, interval = 3, at = 350, perLevel = 0.5 },
 	levelPrice = 230,
 }
 

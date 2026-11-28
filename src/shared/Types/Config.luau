@@ -83,8 +83,9 @@ export type BuildableDef = {
 	line: string,
 	-- Numbers the kind reads. Each kind's file lists its own and their ranges.
 	params: { [string]: number },
-	-- Where its purchase pad sits on the plot. After it is bought, the same pad sells its next level.
-	pad: PlotPoint,
+	-- Where its purchase pad sits on the plot. After it is bought, the same pad sells its next level. Machines on the
+	-- belt (with an `at` param) leave it out: their pad sits beside the belt next to them (`FactoryLayout.padPoint`).
+	pad: PlotPoint?,
 	-- Cash for level 2. Each level after costs `Economy.levels.priceGrowth` times the one before. Absent for a machine
 	-- that has no levels; only kinds with a `perLevel` param can have them.
 	levelPrice: number?,
@@ -103,6 +104,8 @@ export type Factory = {
 	itemSize: number,
 	padSize: number,
 	padThickness: number,
+	-- Gap between the belt's edge and the pads of machines on the belt.
+	padGap: number,
 	-- How far beyond a pad's edge a character may stand and still buy from it. Allows for lag.
 	padReach: number,
 	-- Seconds before standing on the same pad asks the server again.
@@ -116,6 +119,8 @@ export type Factory = {
 		upgrader: string,
 		item: string,
 		pad: string,
+		-- A pad whose price the player cannot pay yet, drawn by their client.
+		padLocked: string,
 	},
 }
 

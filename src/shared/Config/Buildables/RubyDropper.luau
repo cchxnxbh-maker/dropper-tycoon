@@ -12,8 +12,7 @@ local RubyDropper: Types.BuildableDef = {
 	price = 120000,
 	requires = { "Painter" },
 	line = "Main",
-	params = { itemValue = 380, interval = 3.5, at = 150, perLevel = 0.5 },
-	pad = { x = -56, z = -8 },
+	params = { itemValue = 380, interval = 3.5, at = 160, perLevel = 0.5 },
 	levelPrice = 37000,
 }
 

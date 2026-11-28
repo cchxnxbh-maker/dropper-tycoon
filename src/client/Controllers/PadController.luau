@@ -3,7 +3,8 @@
 -- gets a label with what it sells, the machine or its next level, and the price, worked out from the factory state
 -- the server sent. Stepping on it asks the server to buy. Standing on a pad asks again every
 -- `Config.Factory.padRetrySeconds`, so a machine is bought as soon as the cash is there, and staying on a level pad
--- keeps buying levels. The server decides; this only asks. Pads on other players' plots are hidden for this player.
+-- keeps buying levels. A pad whose price is more than the player's cash turns grey on their screen until they can pay.
+-- The server decides; this only asks. Pads on other players' plots are hidden for this player.
 --
 -- Streaming-safe: pads are bound when a part tagged `PurchasePad` streams in and dropped when it leaves.
 --
@@ -39,6 +40,10 @@ local bound: { [Instance]: typeof(Trove.new()) } = {}
 local ownPads: { [BasePart]: string } = {}
 local views: { [BasePart]: PurchasePad.View } = {}
 local lastAsked: { [string]: number } = {}
+-- Pad colours are checked a few times a second; cash changes at most ten times a second.
+local COLOR_CHECKS_PER_SECOND = 4 -- const: how often pad colours are refreshed, not a tuning value
+local padColor = Color3.fromHex(Config.Factory.colors.pad)
+local lockedColor = Color3.fromHex(Config.Factory.colors.padLocked)
 
 -- The plot model a pad belongs to: pads sit in the plot's Pads folder.
 local function plotOf(pad: Instance): Instance?
@@ -69,6 +74,24 @@ local function labelOf(id: string): (string, string)
 		name = Text.format(strings.upgrade, { name = name, level = tostring(offer.level) })
 	end
 	return name, price
+end
+
+-- Greys out every own pad the player cannot pay for yet. The change stays on this client.
+local function recolor()
+	local cashState: ClientStore.Cash? = ClientStore.get("cash")
+	local state: ClientStore.Factory? = ClientStore.get("factory")
+	local cash = if cashState then cashState.cash else 0
+	local owned = if state then state.owned else {}
+	local levels = if state then state.levels else {}
+	for pad, id in ownPads do
+		local offer = Purchase.offer(id, owned, levels, Config.Buildables, Config.Economy.levels)
+		local affordable = offer == nil or cash >= offer.price
+		local color = if affordable then padColor else lockedColor
+		if pad.Color ~= color then
+			pad.Color = color
+			pad.Material = if affordable then Enum.Material.Neon else Enum.Material.SmoothPlastic
+		end
+	end
 end
 
 local function relabel()
@@ -161,6 +184,7 @@ function PadController.init() end
 ]]
 function PadController.start()
 	Scheduler.every("PadRetry", 1 / Config.Factory.padRetrySeconds, retry)
+	Scheduler.every("PadColors", COLOR_CHECKS_PER_SECOND, recolor)
 	trove:Add(ClientStore.changed("factory", relabel))
 	trove:Connect(CollectionService:GetInstanceAddedSignal(WorldKeys.Tags.PurchasePad), bind)
 	trove:Connect(CollectionService:GetInstanceRemovedSignal(WorldKeys.Tags.PurchasePad), unbind)

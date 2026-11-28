@@ -12,8 +12,7 @@ local Washer: Types.BuildableDef = {
 	price = 88,
 	requires = { "CopperDropper" },
 	line = "Main",
-	params = { multiplier = 1.5, at = 392, perLevel = 0.1 },
-	pad = { x = 8, z = -36 },
+	params = { multiplier = 1.5, at = 413, perLevel = 0.1 },
 	levelPrice = 73,
 }
 

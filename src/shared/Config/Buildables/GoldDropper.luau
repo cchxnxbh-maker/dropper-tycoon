@@ -12,8 +12,7 @@ local GoldDropper: Types.BuildableDef = {
 	price = 9700,
 	requires = { "Polisher" },
 	line = "Main",
-	params = { itemValue = 70, interval = 3, at = 250, perLevel = 0.5 },
-	pad = { x = -8, z = -22 },
+	params = { itemValue = 70, interval = 3, at = 260, perLevel = 0.5 },
 	levelPrice = 3100,
 }
 

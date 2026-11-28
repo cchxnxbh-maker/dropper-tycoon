@@ -12,8 +12,7 @@ local Painter: Types.BuildableDef = {
 	price = 75000,
 	requires = { "EmeraldDropper" },
 	line = "Main",
-	params = { multiplier = 1.5, at = 175, perLevel = 0.1 },
-	pad = { x = 56, z = -22 },
+	params = { multiplier = 1.5, at = 185, perLevel = 0.1 },
 	levelPrice = 23000,
 }
 

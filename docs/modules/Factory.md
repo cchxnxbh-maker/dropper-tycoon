@@ -59,21 +59,21 @@ give). Levels go up to `Economy.levels.maxLevel` (10), each costing `priceGrowth
 | --- | --- | --- | --- | --- |
 | StarterConveyor | Conveyor | Free | None | Belt, 8 studs a second |
 | BasicCollector | Collector | Free | $44 | Pays items at 1x, +0.1 a level |
-| CoalDropper | Dropper | Free | $7 | $1 every 2 s at 385 studs, +50% a level |
-| CopperDropper | Dropper | $27 | $27 | $3 every 2.5 s at 370 studs, +50% a level |
-| Washer | Upgrader | $88 | $73 | 1.5x at 392 studs, +0.1 a level |
-| TinDropper | Dropper | $240 | $97 | $8 every 3 s at 350 studs, +50% a level |
-| IronDropper | Dropper | $620 | $230 | $16 every 3 s at 330 studs, +50% a level |
+| CoalDropper | Dropper | Free | $7 | $1 every 2 s at 405 studs, +50% a level |
+| CopperDropper | Dropper | $27 | $27 | $3 every 2.5 s at 390 studs, +50% a level |
+| Washer | Upgrader | $88 | $73 | 1.5x at 413 studs, +0.1 a level |
+| TinDropper | Dropper | $240 | $97 | $8 every 3 s at 370 studs, +50% a level |
+| IronDropper | Dropper | $620 | $230 | $16 every 3 s at 350 studs, +50% a level |
 | FastConveyor | Conveyor | $1,200 | None | Belt, 14 studs a second |
-| Sorter | Upgrader | $1,900 | $640 | 1.5x at 340 studs, +0.1 a level |
-| SilverDropper | Dropper | $3,300 | $1,100 | $35 every 3 s at 300 studs, +50% a level |
-| Polisher | Upgrader | $5,700 | $1,800 | 1.5x at 315 studs, +0.1 a level |
-| GoldDropper | Dropper | $9,700 | $3,100 | $70 every 3 s at 250 studs, +50% a level |
-| Smelter | Upgrader | $16,000 | $5,000 | 1.5x at 230 studs, +0.1 a level |
+| Sorter | Upgrader | $1,900 | $640 | 1.5x at 360 studs, +0.1 a level |
+| SilverDropper | Dropper | $3,300 | $1,100 | $35 every 3 s at 320 studs, +50% a level |
+| Polisher | Upgrader | $5,700 | $1,800 | 1.5x at 335 studs, +0.1 a level |
+| GoldDropper | Dropper | $9,700 | $3,100 | $70 every 3 s at 260 studs, +50% a level |
+| Smelter | Upgrader | $16,000 | $5,000 | 1.5x at 240 studs, +0.1 a level |
 | BigCollector | Collector | $28,000 | $8,600 | Pays items at 2x, +0.1 a level |
-| EmeraldDropper | Dropper | $46,000 | $14,000 | $180 every 3.5 s at 200 studs, +50% a level |
-| Painter | Upgrader | $75,000 | $23,000 | 1.5x at 175 studs, +0.1 a level |
-| RubyDropper | Dropper | $120,000 | $37,000 | $380 every 3.5 s at 150 studs, +50% a level |
+| EmeraldDropper | Dropper | $46,000 | $14,000 | $180 every 3.5 s at 210 studs, +50% a level |
+| Painter | Upgrader | $75,000 | $23,000 | 1.5x at 185 studs, +0.1 a level |
+| RubyDropper | Dropper | $120,000 | $37,000 | $380 every 3.5 s at 160 studs, +50% a level |
 | Engraver | Upgrader | $200,000 | $61,000 | 1.5x at 110 studs, +0.1 a level |
 | TurboConveyor | Conveyor | $310,000 | None | Belt, 22 studs a second |
 | SapphireDropper | Dropper | $460,000 | $130,000 | $850 every 4 s at 90 studs, +50% a level |
@@ -88,9 +88,13 @@ A better conveyor or collector replaces the old one on the line, and only the be
 ## Layout
 
 `Config/Factory.luau` places the line on every plot (in plot studs; negative z is the front, where the spawn is) and
-sizes the grey boxes. The line is a `path` of corners joined by runs along x or z: three rows of 120 studs across the
-back half joined by two bends of 20, 400 studs in all, ending at the front row's left end with the collector. Pads sit
-in three rows of eight in the front half, the first row nearest the spawn. `Logic/FactoryLayout` turns a machine into
+sizes the grey boxes. The line is a `path` of corners joined by runs along x or z: three rows of 120 studs joined by
+two bends of 30, 420 studs in all, ending at the front row's left end with the collector. Each dropper and upgrader
+has its pad beside it, on the belt's left (`FactoryLayout.padPoint`): the back two rows' pads share the wide gap
+between them, and the front row's pads face the spawn. Droppers hang their post on the belt's right, away from the
+pad. Conveyors and collectors are not on one spot of the belt, so their pads keep a `pad` position in config, in two
+short rows near the spawn. A pad the player cannot afford yet is drawn grey (`Factory.colors.padLocked`), on that
+player's screen only. `Logic/FactoryLayout` turns a machine into
 boxes (one belt box per run, machines turned with the belt) and a pad into a box, and `problems` checks the factory
 fits: the path runs straight and stays on the plot with its collector, every `at` is on the belt, off the bends and at
 least a dropper's width from the next machine, and every pad is on the plot and clear of the spawn, the line and other

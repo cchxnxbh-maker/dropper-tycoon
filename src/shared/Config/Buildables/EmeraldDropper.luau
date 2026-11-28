@@ -12,8 +12,7 @@ local EmeraldDropper: Types.BuildableDef = {
 	price = 46000,
 	requires = { "BigCollector" },
 	line = "Main",
-	params = { itemValue = 180, interval = 3.5, at = 200, perLevel = 0.5 },
-	pad = { x = 40, z = -22 },
+	params = { itemValue = 180, interval = 3.5, at = 210, perLevel = 0.5 },
 	levelPrice = 14000,
 }
 

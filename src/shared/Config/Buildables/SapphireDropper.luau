@@ -13,7 +13,6 @@ local SapphireDropper: Types.BuildableDef = {
 	requires = { "TurboConveyor" },
 	line = "Main",
 	params = { itemValue = 850, interval = 4, at = 90, perLevel = 0.5 },
-	pad = { x = -8, z = -8 },
 	levelPrice = 130000,
 }
 

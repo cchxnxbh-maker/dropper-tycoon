@@ -13,7 +13,7 @@ local FastConveyor: Types.BuildableDef = {
 	requires = { "IronDropper" },
 	line = "Main",
 	params = { speed = 14 },
-	pad = { x = 56, z = -36 },
+	pad = { x = 12, z = -40 },
 }
 
 return FastConveyor

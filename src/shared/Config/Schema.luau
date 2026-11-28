@@ -106,6 +106,7 @@ local rules = Validate.record({
 		itemSize = Validate.number({ min = 0.2, max = 10 }),
 		padSize = studs,
 		padThickness = Validate.number({ min = 0.05, max = 20 }),
+		padGap = Validate.number({ min = 0, max = 50 }),
 		padReach = Validate.number({ min = 0, max = 50 }),
 		padRetrySeconds = Validate.number({ min = 0.5, max = 10 }),
 		maxItemsPerDropper = Validate.number({ integer = true, min = 1, max = 500 }),
@@ -116,6 +117,7 @@ local rules = Validate.record({
 			upgrader = color,
 			item = color,
 			pad = color,
+			padLocked = color,
 		}),
 	}),
 	-- ADR 0009: cash stays under 1e15 per rebirth cycle.
@@ -148,7 +150,7 @@ local rules = Validate.record({
 		requires = Validate.list(Validate.string({ pattern = "^%u%w*$", hint = "a buildable ID" })),
 		line = Validate.string({ oneOf = { "Main" } }),
 		params = Validate.map(Validate.string({ pattern = "^%l%w*$", hint = "like itemValue" }), Validate.number()),
-		pad = point,
+		pad = Validate.optional(point),
 		levelPrice = Validate.optional(Validate.number({ min = 0, max = 1e15 })),
 	})),
 })

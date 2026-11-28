@@ -13,7 +13,6 @@ local Engraver: Types.BuildableDef = {
 	requires = { "RubyDropper" },
 	line = "Main",
 	params = { multiplier = 1.5, at = 110, perLevel = 0.1 },
-	pad = { x = -40, z = -8 },
 	levelPrice = 61000,
 }
 

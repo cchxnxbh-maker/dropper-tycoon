@@ -13,7 +13,6 @@ local Plater: Types.BuildableDef = {
 	requires = { "SapphireDropper" },
 	line = "Main",
 	params = { multiplier = 1.6, at = 60, perLevel = 0.1 },
-	pad = { x = 8, z = -8 },
 	levelPrice = 220000,
 }
 

@@ -12,8 +12,7 @@ local Polisher: Types.BuildableDef = {
 	price = 5700,
 	requires = { "SilverDropper" },
 	line = "Main",
-	params = { multiplier = 1.5, at = 315, perLevel = 0.1 },
-	pad = { x = -24, z = -22 },
+	params = { multiplier = 1.5, at = 335, perLevel = 0.1 },
 	levelPrice = 1800,
 }
 

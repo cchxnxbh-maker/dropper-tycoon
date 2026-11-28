@@ -13,7 +13,7 @@ local BigCollector: Types.BuildableDef = {
 	requires = { "Smelter" },
 	line = "Main",
 	params = { multiplier = 2, perLevel = 0.1 },
-	pad = { x = 24, z = -22 },
+	pad = { x = -50, z = -18 },
 	levelPrice = 8600,
 }
 

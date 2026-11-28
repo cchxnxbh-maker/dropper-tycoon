@@ -25,12 +25,13 @@ rethink; this is the first.
 3. **Save schema version 4** adds `factory.levels`: machine ID to level, only for levels above 1. A save stores
    levels, never prices (migration `v004_machine_levels`, fixture `v004`).
 4. **A winding line.** `Factory.line` is now a `path` of corners joined by straight runs along x or z. The tier 1
-   line runs in three rows across the back half of the plot, 400 studs in all (it was 90). `FactoryLayout` draws one
+   line runs in three rows joined by 30-stud bends, 420 studs in all (it was 90). `FactoryLayout` draws one
    belt box per run, turns machines with the belt, and checks that the path runs straight, fits the plot, and that no
    machine sits on a bend or on another machine.
 5. **24 machines** in tier 1 (it was 12): 10 droppers, 8 upgraders, 3 conveyors, 3 collectors. Early droppers sit
    near the collector so their cash comes at once; later droppers sit further back so their items pass more arches.
-   Pads fill three rows of eight at the front.
+   Each dropper's and upgrader's pad sits beside it on the belt; the bends are 30 studs so the pads fit between the
+   rows. A pad the player cannot afford is drawn grey on their screen.
 6. **Faster pacing targets.** `Economy.pacing.maxWaitSeconds` drops from 150 to 40, counting levels as purchases. The
    balance tool buys the cheapest thing any pad sells, machine or level, and stops once every machine is owned. The
    config gives a longest wait of 22 seconds, about 190 purchases, and every machine in about 18 minutes. Every number

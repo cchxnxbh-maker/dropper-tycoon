@@ -12,8 +12,7 @@ local Smelter: Types.BuildableDef = {
 	price = 16000,
 	requires = { "GoldDropper" },
 	line = "Main",
-	params = { multiplier = 1.5, at = 230, perLevel = 0.1 },
-	pad = { x = 8, z = -22 },
+	params = { multiplier = 1.5, at = 240, perLevel = 0.1 },
 	levelPrice = 5000,
 }
 

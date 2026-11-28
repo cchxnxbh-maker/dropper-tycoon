@@ -13,7 +13,6 @@ local Crystallizer: Types.BuildableDef = {
 	requires = { "DiamondDropper" },
 	line = "Main",
 	params = { multiplier = 1.6, at = 45, perLevel = 0.1 },
-	pad = { x = 40, z = -8 },
 	levelPrice = 570000,
 }
 

@@ -12,8 +12,7 @@ local TinDropper: Types.BuildableDef = {
 	price = 240,
 	requires = { "Washer" },
 	line = "Main",
-	params = { itemValue = 8, interval = 3, at = 350, perLevel = 0.5 },
-	pad = { x = 24, z = -36 },
+	params = { itemValue = 8, interval = 3, at = 370, perLevel = 0.5 },
 	levelPrice = 97,
 }
 

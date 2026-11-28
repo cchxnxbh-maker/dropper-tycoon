@@ -34,7 +34,7 @@ end
 describe("FactoryLayout", function()
 	it("measures the line along every run of its path", function()
 		expect(FactoryLayout.length(bent)).toBe(30)
-		expect(FactoryLayout.length(factory)).toBe(400)
+		expect(FactoryLayout.length(factory)).toBe(420)
 	end)
 
 	it("puts a point on the belt's top surface and says which way the belt runs there", function()
@@ -64,8 +64,8 @@ describe("FactoryLayout", function()
 		expect(#dropper).toBe(2)
 		expect({ dropper[1].x, dropper[1].z }).toEqual({ 20, 5 })
 		expect(dropper[1].y > bent.line.height).toBe(true)
-		-- Beside the belt: on a run along +z the post moves along -x.
-		expect(dropper[2].x < 20 and dropper[2].z == 5).toBe(true)
+		-- Beside the belt on its right: on a run along +z the post moves along +x.
+		expect(dropper[2].x > 20 and dropper[2].z == 5).toBe(true)
 		local arch = FactoryLayout.boxes(def("Wash", "Upgrader", { multiplier = 2, at = 25, perLevel = 0 }, 0, 0), bent)
 		expect(#arch).toBe(3)
 		expect(arch[3].sx > arch[3].sz).toBe(true)
@@ -75,6 +75,15 @@ describe("FactoryLayout", function()
 		local bin = FactoryLayout.boxes(def("Bin", "Collector", { multiplier = 1, perLevel = 0 }, 0, 0), bent)
 		expect({ bin[1].x, bin[1].z }).toEqual({ 20, 10 + bent.collectorSize / 2 })
 		expect(#FactoryLayout.boxes(def("Odd", "Furnace", {}, 0, 0), bent)).toBe(0)
+	end)
+
+	it("puts a belt machine's pad beside it on the belt's left, and others where their config says", function()
+		local offset = bent.line.width / 2 + bent.padGap + bent.padSize / 2
+		local along = FactoryLayout.padPoint(def("Coal", "Dropper", { at = 5 }, 99, 99), bent)
+		expect(along).toEqual({ x = 5, z = offset })
+		local up = FactoryLayout.padPoint(def("Coal", "Dropper", { at = 25 }, 99, 99), bent)
+		expect(up).toEqual({ x = 20 - offset, z = 5 })
+		expect(FactoryLayout.padPoint(def("Belt", "Conveyor", { speed = 8 }, 12, -8), bent)).toEqual({ x = 12, z = -8 })
 	end)
 
 	it("lets a character buy from just past a pad's corner, not further", function()
@@ -98,23 +107,28 @@ describe("FactoryLayout", function()
 	end)
 
 	it("reports pads off the plot, on the spawn, on the line or on each other, and machines off the belt", function()
+		local missing = def("G", "Conveyor", {}, 0, 0)
+		missing.pad = nil
 		local defs = {
-			A = def("A", "Dropper", { at = 500 }, 100, -30),
+			A = def("A", "Dropper", { at = 500 }, 0, 0),
 			B = def("B", "Conveyor", {}, 0, -64),
 			C = def("C", "Conveyor", {}, 0, factory.line.path[1].z),
 			D = def("D", "Conveyor", {}, -30, -30),
 			E = def("E", "Conveyor", {}, -28, -30),
+			F = def("F", "Conveyor", {}, 100, -30),
+			G = missing,
 		}
-		expect(FactoryLayout.problems(factory, Config.Plots, defs, { "A", "B", "C", "D", "E" })).toEqual({
-			"Buildables.A.params.at: must be on the belt, below 400, got 500",
-			"Buildables.A.pad: the pad must be on the plot",
+		expect(FactoryLayout.problems(factory, Config.Plots, defs, { "A", "B", "C", "D", "E", "F", "G" })).toEqual({
+			"Buildables.A.params.at: must be on the belt, below 420, got 500",
+			"Buildables.G.pad: missing; a machine that is not on the belt needs a pad position",
 			"Buildables.B.pad: the pad overlaps the spawn pad",
 			"Buildables.C.pad: the pad overlaps the production line",
 			"Buildables.D.pad: the pad overlaps the pad of E",
+			"Buildables.F.pad: the pad must be on the plot",
 		})
 	end)
 
-	it("reports machines on a bend or on top of each other", function()
+	it("reports machines on a bend or on top of each other, and so their pads", function()
 		local defs = {
 			A = def("A", "Dropper", { at = 118 }, -56, -36),
 			B = def("B", "Upgrader", { at = 50 }, -40, -36),
@@ -123,6 +137,8 @@ describe("FactoryLayout", function()
 		expect(FactoryLayout.problems(factory, Config.Plots, defs, { "A", "B", "C" })).toEqual({
 			"Buildables.A.params.at: too close to the bend at 120",
 			"Buildables.C.params.at: too close to B on the belt",
+			"Buildables.A.pad: the pad overlaps the production line",
+			"Buildables.B.pad: the pad overlaps the pad of C",
 		})
 	end)
 
