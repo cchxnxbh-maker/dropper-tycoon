@@ -1,8 +1,8 @@
 # 0020. The six-plot place: plots built by code, streaming in the Rojo project, a dev panel
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-28
-- **Decided by:** Claude's recommendation, waiting for Daniel
+- **Decided by:** Claude's recommendation, accepted by Daniel
 
 ## Context
 
