@@ -174,6 +174,34 @@ function Validate.map(keyRule: Rule, valueRule: Rule): Rule
 end
 
 --[[
+	An array: keys 1 to n with no gaps, each value passing `itemRule`. An empty table is an empty list.
+	@param itemRule the rule for each item
+	@return the rule
+]]
+function Validate.list(itemRule: Rule): Rule
+	return function(value, path, problems)
+		if type(value) ~= "table" then
+			add(problems, path, "must be a list", value)
+			return
+		end
+		local count = #value
+		for _, key in sortedKeys(value) do
+			if type(key) ~= "number" or key < 1 or key > count or key % 1 ~= 0 then
+				add(
+					problems,
+					join(path, key),
+					"is not a list position (lists have no named or missing entries)",
+					value[key]
+				)
+			end
+		end
+		for index = 1, count do
+			itemRule(value[index], join(path, index), problems)
+		end
+	end
+end
+
+--[[
 	A registry built from a folder index: file name to entry. Each entry must be a table whose `id` equals its file
 	name, because IDs are saved in player data and must never drift from the file that defines them.
 	@param entryRule optional rule for each entry's full contents

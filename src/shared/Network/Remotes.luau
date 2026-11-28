@@ -15,7 +15,13 @@
 --     ServerNet.send(player, Remotes.TestPong, { label = "hello", serverTime = os.time() })
 
 local Net = require("./Net")
+local Purchase = require("../Logic/Purchase")
 local Validate = require("../Logic/Validate")
+
+local buildableId = Validate.string({ pattern = "^%u%w*$", hint = "like CoalDropper (PascalCase)", maxLength = 40 })
+local idMap = function(valueRule: Validate.Rule): Validate.Rule
+	return Validate.map(buildableId, valueRule)
+end
 
 local Remotes = Net.define({
 	-- The test remote from task 8: the client says hello, the server answers with TestPong. It proves the pipeline
@@ -50,6 +56,38 @@ local Remotes = Net.define({
 	DevPanelState = Net.toClient({
 		payload = Validate.record({
 			testCounter = Validate.number({ integer = true, min = 0 }),
+		}),
+	}),
+	-- The player stepped on a purchase pad (task 12). The server checks the machine is available, the character is at
+	-- its pad and the cash is there; the client never says a price. A pad touch can fire a few times in a row.
+	RequestPurchase = Net.toServer({
+		payload = Validate.record({ buildableId = buildableId }),
+		rate = { burst = 6, perSecond = 3 },
+		example = { buildableId = "CoalDropper" },
+	}),
+	-- A purchase did not happen, and why (`Logic/Purchase.luau`). Only "notEnoughCash" is shown to the player.
+	PurchaseRefused = Net.toClient({
+		payload = Validate.record({
+			buildableId = buildableId,
+			reason = Validate.string({ oneOf = Purchase.REASONS :: { string } }),
+		}),
+	}),
+	-- The player's cash, at most `Tuning.Sync.cashPerSecond` times a second and only when it changed.
+	CashSync = Net.toClient({
+		payload = Validate.record({
+			cash = Validate.number({ min = 0 }),
+		}),
+	}),
+	-- The player's factory, sent on join and after each purchase: what they own, and the numbers the client needs to
+	-- run the same simulation to draw items (ADR 0021). `tick` was the simulation step at `serverTime`
+	-- (`workspace:GetServerTimeNow()`); `starts` is `FactorySim.starts`.
+	FactoryState = Net.toClient({
+		payload = Validate.record({
+			owned = idMap(Validate.boolean()),
+			starts = idMap(Validate.number({ integer = true, min = 0 })),
+			tick = Validate.number({ integer = true, min = 0 }),
+			serverTime = Validate.number({ min = 0 }),
+			incomeRate = Validate.number({ min = 0 }),
 		}),
 	}),
 })

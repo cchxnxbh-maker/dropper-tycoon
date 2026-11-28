@@ -10,6 +10,10 @@
 -- The models carry the tag `Plot` and the attributes `PlotIndex`, `OwnerUserId` and `OwnerName` so the client can draw
 -- signs; the attributes are a display of the assignment held here, never the truth.
 --
+-- From task 12 it also shows each owner's factory: the grey-box parts of every machine they bought, in the plot's
+-- `Machines` folder, and a pad for each machine they can buy next, in `Pads` (shapes from `Logic/FactoryLayout`).
+-- PurchaseService decides what goes there; the parts are a display, never the truth (ADR 0021).
+--
 -- State owned: plot assignment and the plot models.
 --
 -- Usage, in Main:
@@ -17,104 +21,49 @@
 --     PlotService.start()
 -- From a later service:
 --     local plot = PlotService.getPlot(player)
+--     PlotService.placeMachine(player, def)
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Builder = require(script.Builder)
 local Config = require(ReplicatedStorage.Shared.Config)
 local DataService = require(script.Parent.DataService)
+local FactoryLayout = require(ReplicatedStorage.Shared.Logic.FactoryLayout)
 local Log = require(ReplicatedStorage.Shared.Util.Log)
 local PlotLayout = require(ReplicatedStorage.Shared.Logic.PlotLayout)
 local PlotSlots = require(ReplicatedStorage.Shared.Logic.PlotSlots)
+local Signal = require(ReplicatedStorage.Packages.Signal)
 local Trove = require(ReplicatedStorage.Packages.Trove)
+local Types = require(ReplicatedStorage.Shared.Types.Config)
 local WorldKeys = require(ReplicatedStorage.Shared.Util.WorldKeys)
 
-type Plot = { index: number, model: Model, spawn: CFrame }
+type Plot = Builder.Plot
+-- Spelled out here because Wally's package link files do not re-export the Signal package's types.
+export type PlayerSignal = {
+	Connect: (self: any, listener: (player: Player) -> ()) -> { Disconnect: (self: any) -> () },
+	Fire: (self: any, player: Player) -> (),
+}
 
 local TAG = "Plot"
 local FOLDER_NAME = "Plots"
 -- How far above the spawn pad a character is placed, so its feet clear the pad. A fact of the default character size.
-local SPAWN_CLEARANCE = 4 -- const: a standard character's hip height plus a margin, not a tuning value
 
 local Attributes = WorldKeys.Attributes
-local Parts = WorldKeys.PlotParts
 
 local PlotService = {}
+
+--[[
+	Fires once a player has been given a plot. Carries the player. Their plot is empty until a later service fills it.
+]]
+PlotService.plotAssigned = (Signal.new() :: any) :: PlayerSignal
 
 local trove = Trove.new()
 local plots: { Plot } = {}
 local slots = PlotSlots.new(Config.Plots.count)
 local playerTroves: { [Player]: typeof(Trove.new()) } = {}
-
-local function part(name: string, size: Vector3, cframe: CFrame, color: string, parent: Instance): Part
-	local made = Instance.new("Part")
-	made.Name = name
-	made.Anchored = true
-	made.Size = size
-	made.CFrame = cframe
-	made.Color = Color3.fromHex(color)
-	made.Material = Enum.Material.SmoothPlastic
-	made.TopSurface = Enum.SurfaceType.Smooth
-	made.BottomSurface = Enum.SurfaceType.Smooth
-	made.Parent = parent
-	return made
-end
-
--- Builds one empty plot. Its pivot is the centre of the base's top face, turned to face the middle of the ring.
-local function buildPlot(slot: PlotLayout.Slot, folder: Folder): Plot
-	local shape = Config.Plots
-	local colors = shape.colors
-	local top = shape.baseThickness
-	local pivot = CFrame.new(slot.x, top, slot.z) * CFrame.Angles(0, slot.yaw, 0)
-	-- The front edge faces the middle, which is the pivot's look direction: negative Z in its own space.
-	local front = -shape.baseSize / 2
-
-	local model = Instance.new("Model")
-	model.Name = `Plot{slot.index}`
-
-	local base = part(
-		Parts.Base,
-		Vector3.new(shape.baseSize, shape.baseThickness, shape.baseSize),
-		pivot * CFrame.new(0, -shape.baseThickness / 2, 0),
-		colors.base,
-		model
-	)
-	base.Material = Enum.Material.Grass
-	model.PrimaryPart = base
-
-	local spawnCFrame = pivot * CFrame.new(0, 0, front + shape.spawnInset)
-	local pad = part(
-		Parts.Spawn,
-		Vector3.new(shape.spawnSize, shape.padThickness, shape.spawnSize),
-		spawnCFrame * CFrame.new(0, shape.padThickness / 2, 0),
-		colors.spawn,
-		model
-	)
-	pad.Material = Enum.Material.Neon
-
-	local sign = part(
-		Parts.Sign,
-		Vector3.new(shape.signWidth, shape.signHeight, shape.signThickness),
-		pivot * CFrame.new(0, shape.signLift + shape.signHeight / 2, front + shape.signThickness / 2),
-		colors.sign,
-		model
-	)
-	sign.CanCollide = false
-
-	model.ModelStreamingMode = Enum.ModelStreamingMode.PersistentPerPlayer
-	model.WorldPivot = pivot
-	model:SetAttribute(Attributes.PlotIndex, slot.index)
-	model:SetAttribute(Attributes.OwnerUserId, 0)
-	model:SetAttribute(Attributes.OwnerName, "")
-	CollectionService:AddTag(model, WorldKeys.Tags.Plot)
-	model.Parent = folder
-
-	-- Characters arrive facing into the plot, away from the middle.
-	local arrival = spawnCFrame * CFrame.new(0, SPAWN_CLEARANCE, 0) * CFrame.Angles(0, math.pi, 0)
-	return { index = slot.index, model = model, spawn = arrival }
-end
 
 -- Sends a character to its owner's spawn pad, once the area around the pad has streamed in for that player.
 local function sendHome(player: Player, character: Model)
@@ -163,6 +112,7 @@ local function assign(player: Player)
 		task.spawn(sendHome, player, character)
 	end
 	Log.info(TAG, "plot assigned", { userId = player.UserId, plot = index, free = slots.freeCount() })
+	PlotService.plotAssigned:Fire(player)
 end
 
 local function release(player: Player)
@@ -175,6 +125,7 @@ local function release(player: Player)
 	if index == nil then
 		return
 	end
+	Builder.clearFactory(plots[index])
 	local model = plots[index].model
 	model:SetAttribute(Attributes.OwnerUserId, 0)
 	model:SetAttribute(Attributes.OwnerName, "")
@@ -191,7 +142,7 @@ function PlotService.init()
 	local folder = Instance.new("Folder")
 	folder.Name = FOLDER_NAME
 	for _, slot in PlotLayout.ring(Config.Plots.count, Config.Plots.ringRadius) do
-		table.insert(plots, buildPlot(slot, folder))
+		table.insert(plots, Builder.plot(slot, folder))
 	end
 	folder.Parent = Workspace
 	trove:Add(folder)
@@ -230,6 +181,84 @@ end
 ]]
 function PlotService.getPlotIndex(player: Player): number?
 	return slots.indexOf(player.UserId)
+end
+
+--[[
+	Shows one bought machine on the player's plot, as grey-box parts in a model tagged `Buildable`.
+	@param player the plot's owner
+	@param def the machine
+	@return true when placed; false when the player holds no plot. Placing a machine that is already shown replaces it
+]]
+function PlotService.placeMachine(player: Player, def: Types.BuildableDef): boolean
+	local index = slots.indexOf(player.UserId)
+	if index == nil then
+		return false
+	end
+	local plot = plots[index]
+	local old = plot.machines:FindFirstChild(def.id)
+	if old then
+		old:Destroy()
+	end
+	local model = Instance.new("Model")
+	model.Name = def.id
+	for _, box in FactoryLayout.boxes(def, Config.Factory) do
+		local made = Builder.box(box, plot.pivot, model)
+		-- Items are drawn by each client and never touch parts, so machines need no collision with them; players may
+		-- still bump into machines.
+		made.CanTouch = false
+	end
+	model:SetAttribute(Attributes.BuildableId, def.id)
+	CollectionService:AddTag(model, WorldKeys.Tags.Buildable)
+	model.Parent = plot.machines
+	return true
+end
+
+--[[
+	Replaces the purchase pads on the player's plot.
+	@param player the plot's owner
+	@param defs the machines whose pads should show, usually `Purchase.available`
+	@return true when shown; false when the player holds no plot
+]]
+function PlotService.showPads(player: Player, defs: { Types.BuildableDef }): boolean
+	local index = slots.indexOf(player.UserId)
+	if index == nil then
+		return false
+	end
+	local plot = plots[index]
+	plot.pads:ClearAllChildren()
+	for _, def in defs do
+		local pad = Builder.box(FactoryLayout.pad(def, Config.Factory), plot.pivot, plot.pads)
+		pad.Name = def.id
+		pad.Material = Enum.Material.Neon
+		pad:SetAttribute(Attributes.BuildableId, def.id)
+		CollectionService:AddTag(pad, WorldKeys.Tags.PurchasePad)
+	end
+	return true
+end
+
+--[[
+	Removes every machine and pad from the player's plot. For the dev panel's reset.
+	@param player the plot's owner
+]]
+function PlotService.clearFactory(player: Player)
+	local index = slots.indexOf(player.UserId)
+	if index then
+		Builder.clearFactory(plots[index])
+	end
+end
+
+--[[
+	Where a point on the player's plot is in the world.
+	@param player the plot's owner
+	@param point a point in plot studs, as in config
+	@return the world position on the plot's surface; nil when the player holds no plot
+]]
+function PlotService.toWorld(player: Player, point: Types.PlotPoint): Vector3?
+	local index = slots.indexOf(player.UserId)
+	if index == nil then
+		return nil
+	end
+	return (plots[index].pivot * CFrame.new(point.x, 0, point.z)).Position
 end
 
 return PlotService

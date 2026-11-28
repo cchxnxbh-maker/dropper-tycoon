@@ -23,10 +23,11 @@ Between client and server there is exactly one door: the remotes listed in `src/
             CLIENT (one per player)                         SERVER (one per game server)
   ┌──────────────────────────────────────┐      ┌───────────────────────────────────────────┐
   │ Main.client.luau                     │      │ Main.server.luau                          │
-  │   Controllers: Ping, PlotSign,       │      │   Services, in start order:               │
-  │   DevPanel                           │      │   Data → Plot → Dev                       │
-  │   UI: Kit (Theme, Widgets), Screens  │      │                                           │
-  │   Views: PlotSign                    │      │   Net: ServerNet → Pipeline → Handlers    │
+  │   Controllers: Ping, PlotSign, Hud,  │      │   Services, in start order:               │
+  │   Pad, FactoryView, DevPanel         │      │   Data → Economy → Plot → Factory →       │
+  │   UI: Kit, Screens (Hud, DevPanel)   │      │   Purchase → Dev                          │
+  │   Views: PlotSign, PurchasePad       │      │   Net: ServerNet → Pipeline → Handlers    │
+  │   Net: ClientStore ◀ StateSync       │      │                                           │
   │   Net: ClientNet ────────────────────┼──────┼─▶ (every request checked before a handler)│
   │         ◀────────────────────────────┼──────┼── ServerNet.send (state, answers)         │
   └──────────────────────────────────────┘      │   DataService ─▶ ProfileStore ─▶ stores   │
@@ -35,8 +36,8 @@ Between client and server there is exactly one door: the remotes listed in `src/
                     └──▶  Config · Logic · Network · Types · Util  ◀──────────────┘
 ```
 
-Planned services (Economy, Prestige, Factory, Purchase, Offline, Leaderboard, Analytics, Monetization) take their
-places in the order as they are built. The full order is in the next section.
+Planned services (Prestige, Offline, Leaderboard, Analytics, Monetization) take their places in the order as they are
+built. The full order is in the next section.
 
 ## Where code lives (ADR 0004)
 
@@ -58,13 +59,14 @@ Both entry points stay thin: they apply log settings from config, init every mod
 order, then drive the Scheduler from `RunService`.
 
 **Server order (ADR 0020):** Data, Economy, Prestige, Plot, Factory, Purchase, Offline, Leaderboard, Analytics,
-Monetization, Dev. Built so far: Data, Plot, Dev. A service may call only services earlier in the order, and there
+Monetization, Dev. Built so far: Data, Economy, Plot, Factory, Purchase, Dev. A service may call only services earlier in the order, and there
 are no circular requires. Dev is last because dev commands may call anything.
 
 After the services, `ServerNet` starts with the handler table and a session gate (`DataService.isPlaying`), and in
 Studio the abuse suite runs against the real remotes.
 
-**Client order:** ClientNet first (controllers talk through it), then the controllers.
+**Client order:** ClientNet first (controllers talk through it), then StateSync (it fills ClientStore from what the
+server sends), then the controllers.
 
 The server seeds `Rng` once per session and logs the seed, so a session can be replayed (ADR 0016).
 
@@ -79,11 +81,11 @@ signals. Nobody reads another module's tables.
 | Plots and plot models | `PlotService` | `getPlot(player)`, `getPlotIndex(player)` | Assigned on load, freed on leave | Built (ADR 0020) |
 | Dev panel access, `dev` save section | `DevService` | `isAllowed(player)` | `run(player, command)` | Built (ADR 0020) |
 | Remote instances, rate buckets, strikes | `ServerNet` | none | none | Built (ADR 0018) |
-| Cash and multipliers | `EconomyService` | `getCash`, `cashChanged` | `add`, `trySpend` | Phase 1 |
-| Running factory simulation | `FactoryService` | `getIncomeRate` | `rebuild` | Phase 1 |
-| Owned buildables | `PurchaseService` | `owns` | `tryPurchase` | Phase 1 |
-| Prestige points, perks, tiers | `PrestigeService` | `getPoints`, `hasPerk` | `rebirth`, `tryBuyPerk` | Phase 2 |
-| Client copy of player data | `ClientStore` | `get(path)`, `changed(path)` | Only the network layer | Phase 1 |
+| Cash | `EconomyService` | `getCash`, `cashChanged` | `add`, `trySpend` | Built (ADR 0021) |
+| Running factory simulation | `FactoryService` | `getIncomeRate` | `rebuild` | Built (ADR 0021) |
+| Owned buildables | `PurchaseService` | `owns` | `tryPurchase` | Built (ADR 0021) |
+| Multipliers, prestige points, perks, tiers | `PrestigeService` | `getPoints`, `hasPerk` | `rebirth`, `tryBuyPerk` | Phase 2 |
+| Client copy of player data | `ClientStore` | `get(key)`, `changed(key, fn)` | Only `Net/StateSync` | Built, two entries (ADR 0021) |
 
 Only `DataService` requires ProfileStore (ADR 0003). Saves store IDs, never prices or rates, so rebalancing never
 needs a migration.
@@ -137,6 +139,17 @@ valid. Session states are Loading, Playing, Releasing and Ended (`Logic/SessionS
 Every schema change adds a migration and a fixture in `tests/fixtures/saves/` (plan section 12.1). In Studio the real
 store is used only on the Dev place with API access on; otherwise a mock store.
 
+## The factory (ADR 0021)
+
+Each player's factory is a `Logic/FactorySim`: one line built from the machines they own, each kind adding itself
+from `Logic/Kinds/`. Items are not stored. A dropper drops on steps that are multiples of its interval and each item
+arrives a fixed number of steps later, so the step that pays is a formula. FactoryService steps every sim at 10 a
+second and adds what arrives through EconomyService. The client is sent the numbers to run the same sim
+(`FactoryState`) and draws box items itself; no item crosses the network. Grey-box machines and purchase pads are
+built by PlotService from `Logic/FactoryLayout` and `Config/Factory.luau`. Buying: the client asks when its character
+is on a pad; PurchaseService checks `Logic/Purchase` (exists, not owned, requirements, distance, cash), spends, saves,
+places the machine and rebuilds. Details: `docs/modules/Factory.md`, `docs/modules/Economy.md`.
+
 ## Timing (plan section 4.1)
 
 There is no global update loop. Each system registers with `Util/Scheduler.luau`: fixed steps at their own rate
@@ -176,3 +189,6 @@ run the same command. Details: `docs/modules/check.md`.
 | Plot template in the place file | Plots built by code from config | No art yet; the place file stays nearly empty (ADR 0020) |
 | Rate limiter in `server/Net` | `shared/Logic/RateLimiter` | So the client can respect the same limits (ADR 0018) |
 | Start order without Dev | Dev added last | Dev commands may call any service (ADR 0020) |
+| Buildables name a model in ServerStorage | Buildables give a pad position; grey boxes built by code | No art until Phase 2 (ADR 0021) |
+| Items move along conveyor paths | Item positions come from a formula, no item list | No allocation per step, exact income rate (ADR 0021) |
+| ClientStore with path patches | Two entries, cash and factory | Enough for Phase 1 (backlog B-3) |

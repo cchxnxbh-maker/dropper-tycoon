@@ -14,6 +14,8 @@ local Sources: Types.Config = {
 	Flags = require("./Flags"),
 	Tuning = require("./Tuning"),
 	Plots = require("./Plots"),
+	Factory = require("./Factory"),
+	Economy = require("./Economy"),
 	Strings = require("./Strings"),
 	Buildables = require("./Buildables"),
 }

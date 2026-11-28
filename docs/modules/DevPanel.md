@@ -4,7 +4,8 @@ Files: `src/server/Services/DevService.luau`, `src/server/DevCommands/`, `src/se
 `src/server/Net/Handlers/RequestDevCommand.luau`, `src/client/Controllers/DevPanelController.luau`,
 `src/client/UI/Screens/DevPanel.luau`, `src/client/UI/Kit/`. Plan section 4.10. Decision: ADR 0020.
 
-A small box on the left of the screen for developers. It shows the saved test counter and an **Add 1** button.
+A small box on the left of the screen for developers. It shows the saved test counter and one button per command:
+**Add 1**, **Give $1,000** and **Reset factory**.
 
 ## Who sees it
 
@@ -25,5 +26,7 @@ checks access, runs it, logs `[Dev] command ran` and sends the new state. After 
 | Command | What it does |
 | --- | --- |
 | `AddTestCounter` | Adds one to `dev.testCounter` in the save. The Phase 0 exit test checks it survives a rejoin |
+| `GiveCash` | Adds `Config.Economy.devCashGift` cash. Studio and the Dev place only |
+| `ResetFactory` | Takes every machine away and sets cash to 0, so the start can be played again. Studio and the Dev place only |
 
 The owner sees the panel on Live too, so every command must be safe to run there, or check `game.PlaceId` itself.

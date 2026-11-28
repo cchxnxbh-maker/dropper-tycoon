@@ -116,3 +116,25 @@ describe("Validate.registry", function()
 		expect(check({ A = { id = "A", price = -5 } }, rule)).toEqual({ "Root.A.price: must be at least 0, got -5" })
 	end)
 end)
+
+describe("Validate.list", function()
+	local rule = Validate.list(Validate.number({ min = 0 }))
+
+	it("accepts an empty list and a list of good items", function()
+		expect(Validate.run({}, rule, "l")).toEqual({})
+		expect(Validate.run({ 1, 2, 3 }, rule, "l")).toEqual({})
+	end)
+
+	it("reports bad items, named keys and gaps", function()
+		expect(Validate.run({ 1, -1 }, rule, "l")).toEqual({ "l.2: must be at least 0, got -1" })
+		local named: { [any]: number } = { 1 }
+		named.x = 2
+		expect(Validate.run(named, rule, "l")).toEqual({
+			"l.x: is not a list position (lists have no named or missing entries), got 2",
+		})
+		expect(Validate.run({ [2] = 1 }, rule, "l")).toEqual({
+			"l.2: is not a list position (lists have no named or missing entries), got 1",
+		})
+		expect(Validate.run("no", rule, "l")).toEqual({ 'l: must be a list, got "no"' })
+	end)
+end)

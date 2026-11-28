@@ -35,16 +35,28 @@ export type Dev = {
 	testCounter: number,
 }
 
+-- Cash, owned by `EconomyService`. Version 3 adds it. A number, not always whole, because upgraders multiply.
+export type Economy = {
+	cash: number,
+}
+
+-- The machines the player has bought, by ID, owned by `PurchaseService`. Version 3 adds it. IDs only, never prices.
+export type Factory = {
+	owned: { [string]: boolean },
+}
+
 export type SaveData = {
 	schemaVersion: number,
 	meta: Meta,
 	dev: Dev,
+	economy: Economy,
+	factory: Factory,
 }
 
 local SaveSchema = {}
 
 -- The version this build writes. A save with a higher number was written by a newer build and is refused.
-SaveSchema.CURRENT_VERSION = 2
+SaveSchema.CURRENT_VERSION = 3 -- const: the schema version, raised by hand with each migration
 
 local count = Validate.number({ integer = true, min = 0 })
 
@@ -61,6 +73,16 @@ SaveSchema.rule = Validate.record({
 	}),
 	dev = Validate.record({
 		testCounter = count,
+	}),
+	-- The cash cap (ADR 0009) is enforced by EconomyService; the save only refuses what can never be right.
+	economy = Validate.record({
+		cash = Validate.number({ min = 0 }),
+	}),
+	factory = Validate.record({
+		owned = Validate.map(
+			Validate.string({ pattern = "^%u%w*$", hint = "a buildable ID", maxLength = 40 }), -- const: same limit as buildable IDs in config
+			Validate.boolean()
+		),
 	}),
 })
 

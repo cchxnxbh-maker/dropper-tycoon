@@ -10,23 +10,35 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ClientNet = require(script.Parent.Net.ClientNet)
 local Config = require(Shared:WaitForChild("Config"))
 local DevPanelController = require(script.Parent.Controllers.DevPanelController)
+local FactoryViewController = require(script.Parent.Controllers.FactoryViewController)
+local HudController = require(script.Parent.Controllers.HudController)
 local Log = require(Shared:WaitForChild("Util"):WaitForChild("Log"))
+local PadController = require(script.Parent.Controllers.PadController)
 local PingController = require(script.Parent.Controllers.PingController)
 local PlotSignController = require(script.Parent.Controllers.PlotSignController)
 local Scheduler = require(Shared:WaitForChild("Util"):WaitForChild("Scheduler"))
+local StateSync = require(script.Parent.Net.StateSync)
 local Trove = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Trove"))
 
 Log.configure(Config.Flags.Log)
 Log.setBuild(Config.Build.version)
 
--- Init everything, then start everything. ClientNet comes first: controllers talk to the server through it.
+-- Init everything, then start everything. ClientNet comes first: controllers talk to the server through it, and
+-- StateSync fills ClientStore from what the server sends.
 ClientNet.init()
+StateSync.init()
 PingController.init()
 PlotSignController.init()
+HudController.init()
+PadController.init()
+FactoryViewController.init()
 DevPanelController.init()
 
 PingController.start()
 PlotSignController.start()
+HudController.start()
+PadController.start()
+FactoryViewController.start()
 DevPanelController.start()
 
 local trove = Trove.new()

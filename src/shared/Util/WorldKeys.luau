@@ -16,6 +16,8 @@ local WorldKeys = table.freeze({
 		Plot = "Plot",
 		-- Every buildable model. Attribute: BuildableId.
 		Buildable = "Buildable",
+		-- Every purchase pad. Attribute: BuildableId. A pad exists only while its machine can be bought.
+		PurchasePad = "PurchasePad",
 	}),
 	Attributes = table.freeze({
 		-- The plot's number, 1 to `Config.Plots.count`.
@@ -31,6 +33,10 @@ local WorldKeys = table.freeze({
 		Base = "Base",
 		Spawn = "Spawn",
 		Sign = "Sign",
+		-- Folder of the owner's bought machines, one model each.
+		Machines = "Machines",
+		-- Folder of the pads for machines the owner can buy next.
+		Pads = "Pads",
 	}),
 })
 

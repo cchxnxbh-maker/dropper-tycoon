@@ -4,6 +4,8 @@
 
 local index: { [string]: any } = {
 	AddTestCounter = require("@self/AddTestCounter"),
+	GiveCash = require("@self/GiveCash"),
+	ResetFactory = require("@self/ResetFactory"),
 }
 
 return index
