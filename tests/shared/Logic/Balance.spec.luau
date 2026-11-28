@@ -8,8 +8,16 @@ local describe, it, expect = testkit.describe, testkit.it, testkit.expect
 local Balance = require("../../../src/shared/Logic/Balance")
 local Config = require("../../../src/shared/Config")
 
-local function machine(id: string, kind: string, price: number, requires: { string }, params: any): any
+local function machine(
+	id: string,
+	kind: string,
+	price: number,
+	requires: { string },
+	params: any,
+	levelPrice: number?
+): any
 	return {
+		levelPrice = levelPrice,
 		id = id,
 		kind = kind,
 		tier = 1,
@@ -24,20 +32,33 @@ local function machine(id: string, kind: string, price: number, requires: { stri
 	}
 end
 
--- A tiny factory: a free belt, bin and dropper paying 1 a second, then a dropper costing `price`.
-local function tiny(price: number): any
+-- A straight line 90 studs long, so a belt of speed 90 carries an item in one second.
+local straight: any = table.clone(Config.Factory)
+straight.line = { path = { { x = -45, z = 30 }, { x = 45, z = 30 } }, height = 3, width = 4 }
+
+-- A tiny factory: a free belt, bin and dropper paying 1 a second, then a dropper costing `price`. With `levelPrice`,
+-- the first dropper sells levels too, up to level 3.
+local function tiny(price: number, levelPrice: number?): any
 	return {
 		Buildables = {
 			Belt = machine("Belt", "Conveyor", 0, {}, { speed = 90 }),
 			Bin = machine("Bin", "Collector", 0, { "Belt" }, { multiplier = 1 }),
-			Coal = machine("Coal", "Dropper", 0, { "Bin" }, { itemValue = 1, interval = 1, at = 0 }),
+			Coal = machine(
+				"Coal",
+				"Dropper",
+				0,
+				{ "Bin" },
+				{ itemValue = 1, interval = 1, at = 0, perLevel = 1 },
+				levelPrice
+			),
 			Gold = machine("Gold", "Dropper", price, { "Coal" }, { itemValue = 5, interval = 1, at = 0 }),
 		},
-		Factory = Config.Factory,
+		Factory = straight,
 		Tuning = Config.Tuning,
 		Economy = {
 			maxCash = 1e15,
 			devCashGift = 1,
+			levels = { maxLevel = 3, priceGrowth = 2 },
 			pacing = { maxWaitSeconds = 60, minTotalMinutes = 0, maxTotalMinutes = 10 },
 		},
 	}
@@ -55,6 +76,19 @@ describe("Balance", function()
 		expect(gold.at >= 20 and gold.at <= 21).toBe(true)
 		expect(gold.rate).toBeCloseTo(6, 1e-9)
 		expect(Balance.problems(report, tiny(20).Economy)).toEqual({})
+	end)
+
+	it("buys a level when it is the cheapest thing on offer, and stops once every machine is owned", function()
+		local report = Balance.run(tiny(20, 4))
+		local bought: { string } = {}
+		for _, buy in report.buys do
+			table.insert(bought, if buy.upgrade then `{buy.id}:{buy.level}` else buy.id)
+		end
+		-- Level 2 costs 4 and level 3 costs 8, both cheaper than Gold; Gold ends the run.
+		expect(bought).toEqual({ "Belt", "Bin", "Coal", "Coal:2", "Coal:3", "Gold" })
+		expect(report.buys[4].rate).toBeCloseTo(2, 1e-9)
+		expect(report.buys[5].rate).toBeCloseTo(3, 1e-9)
+		expect(report.finished).toBe(true)
 	end)
 
 	it("reports a wait over the limit", function()

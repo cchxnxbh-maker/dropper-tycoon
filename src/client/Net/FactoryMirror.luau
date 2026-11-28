@@ -16,7 +16,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ClientStore = require(script.Parent.ClientStore)
 local Config = require(Shared:WaitForChild("Config"))
+local FactoryLayout = require(Shared:WaitForChild("Logic"):WaitForChild("FactoryLayout"))
 local FactorySim = require(Shared:WaitForChild("Logic"):WaitForChild("FactorySim"))
+local Levels = require(Shared:WaitForChild("Logic"):WaitForChild("Levels"))
+local Purchase = require(Shared:WaitForChild("Logic"):WaitForChild("Purchase"))
 
 local FactoryMirror = {}
 
@@ -25,16 +28,15 @@ local syncTick = 0
 local syncTime = 0
 
 local function onFactory(state: ClientStore.Factory)
-	-- Machine definitions carry more fields than the sim reads; it takes them as they are.
-	local defs: { any } = {}
-	for id in state.owned do
-		local def = Config.Buildables[id]
-		if def then
-			table.insert(defs, def)
+	local ids: { string } = {}
+	for _, id in Purchase.sortedIds(Config.Buildables) do
+		if state.owned[id] then
+			table.insert(ids, id)
 		end
 	end
+	local defs: { any } = Levels.defs(Config.Buildables, ids, state.levels)
 	current = FactorySim.new(defs, {
-		length = Config.Factory.line.length,
+		length = FactoryLayout.length(Config.Factory),
 		rate = Config.Tuning.Timing.simRate,
 		tick = state.tick,
 		starts = state.starts,

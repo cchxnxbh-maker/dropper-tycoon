@@ -14,6 +14,8 @@
 
 export type Factory = {
 	owned: { [string]: boolean },
+	-- Levels above 1, by machine ID (ADR 0023).
+	levels: { [string]: number },
 	starts: { [string]: number },
 	tick: number,
 	serverTime: number,

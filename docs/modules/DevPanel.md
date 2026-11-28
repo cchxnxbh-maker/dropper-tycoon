@@ -5,7 +5,7 @@ Files: `src/server/Services/DevService.luau`, `src/server/DevCommands/`, `src/se
 `src/client/UI/Screens/DevPanel.luau`, `src/client/UI/Kit/`. Plan section 4.10. Decision: ADR 0020.
 
 A small box on the left of the screen for developers. It shows the saved test counter and one button per command:
-**Add 1**, **Give $1,000** and **Reset factory**.
+**Add 1**, **Give cash** (`Economy.devCashGift`, $100,000) and **Reset factory**.
 
 ## Who sees it
 

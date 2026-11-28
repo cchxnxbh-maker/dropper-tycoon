@@ -1,5 +1,5 @@
 --!strict
--- BigCollector: a bigger bin that pays 1.5 times for everything it collects.
+-- BigCollector: a bigger bin that pays twice for every item.
 -- Every number is a starting value for the balance pass. Rules: `Config/Schema.luau` and the kind's own file in
 -- `Logic/Kinds/Collector.luau`.
 
@@ -9,11 +9,12 @@ local BigCollector: Types.BuildableDef = {
 	id = "BigCollector",
 	kind = "Collector",
 	tier = 1,
-	price = 16000,
-	requires = { "Polisher" },
+	price = 28000,
+	requires = { "Smelter" },
 	line = "Main",
-	params = { multiplier = 1.5 },
-	pad = { x = 30, z = -26 },
+	params = { multiplier = 2, perLevel = 0.1 },
+	pad = { x = -50, z = -18 },
+	levelPrice = 8600,
 }
 
 return BigCollector

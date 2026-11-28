@@ -58,6 +58,7 @@ Saves hold IDs and counts, never prices or rates, so a rebalance never needs a m
 | 1 | `v001_initial` | `meta`: joins, first and last join time | DataService |
 | 2 | `v002_dev_counter` | `dev.testCounter`, the dev panel's test counter | DevService (ADR 0020) |
 | 3 | `v003_cash_and_factory` | `economy.cash` (0) and `factory.owned` (machine ID to true, empty) | EconomyService, PurchaseService (ADR 0021) |
+| 4 | `v004_machine_levels` | `factory.levels` (machine ID to level, only above 1; empty) | PurchaseService (ADR 0023) |
 
 ## Which store
 

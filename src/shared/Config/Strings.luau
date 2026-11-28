@@ -45,19 +45,34 @@ local Strings: Types.Strings = {
 		coalDropper = "Coal Dropper",
 		copperDropper = "Copper Dropper",
 		washer = "Washer",
+		tinDropper = "Tin Dropper",
 		ironDropper = "Iron Dropper",
 		fastConveyor = "Fast Conveyor",
+		sorter = "Sorter",
 		silverDropper = "Silver Dropper",
 		polisher = "Polisher",
 		goldDropper = "Gold Dropper",
+		smelter = "Smelter",
 		bigCollector = "Big Collector",
+		emeraldDropper = "Emerald Dropper",
+		painter = "Painter",
+		rubyDropper = "Ruby Dropper",
+		engraver = "Engraver",
+		turboConveyor = "Turbo Conveyor",
+		sapphireDropper = "Sapphire Dropper",
+		plater = "Plater",
 		diamondDropper = "Diamond Dropper",
+		crystallizer = "Crystallizer",
+		megaCollector = "Mega Collector",
 	},
 	Purchase = {
 		-- Under a machine's name on its pad. {price} is the formatted price.
 		price = "${price}",
 		-- On the pad of a free machine.
 		free = "Free",
+		-- On the pad of an owned machine, which sells its next level (ADR 0023). {name} is the machine's name and
+		-- {level} the level the pad sells.
+		upgrade = "{name} Lv {level}",
 		-- Shown briefly when the player steps on a pad they cannot afford yet.
 		notEnoughCash = "Not enough cash yet",
 	},

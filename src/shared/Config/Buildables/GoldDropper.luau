@@ -1,5 +1,5 @@
 --!strict
--- GoldDropper: the fifth dropper.
+-- GoldDropper: the first dropper on the middle row.
 -- Every number is a starting value for the balance pass. Rules: `Config/Schema.luau` and the kind's own file in
 -- `Logic/Kinds/Dropper.luau`.
 
@@ -9,11 +9,11 @@ local GoldDropper: Types.BuildableDef = {
 	id = "GoldDropper",
 	kind = "Dropper",
 	tier = 1,
-	price = 7000,
-	requires = { "SilverDropper" },
+	price = 9700,
+	requires = { "Polisher" },
 	line = "Main",
-	params = { itemValue = 80, interval = 4, at = 45 },
-	pad = { x = 10, z = -26 },
+	params = { itemValue = 70, interval = 3, at = 260, perLevel = 0.5 },
+	levelPrice = 3100,
 }
 
 return GoldDropper

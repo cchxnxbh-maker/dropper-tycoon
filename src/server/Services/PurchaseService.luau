@@ -1,13 +1,14 @@
 --!strict
--- PurchaseService: which machines each player owns, and buying new ones (plan sections 3.4 and 3.6, ADR 0021).
+-- PurchaseService: which machines each player owns and at which level, and buying from pads (plan sections 3.4 and
+-- 3.6, ADR 0021, ADR 0023).
 --
 -- When a player gets a plot, their owned machines are placed on it, the pads they can buy next appear, and their
--- factory starts. A purchase request carries only a machine ID. It goes ahead only when `Logic/Purchase` agrees: the
--- machine exists, is not owned, its requirements are owned, the character stands at its pad and the cash is there.
--- Then the cash is spent, the machine is saved as owned, placed, the pads change and the factory is rebuilt. If
--- saving the machine fails after the cash was spent, the cash is given back.
+-- factory starts. A purchase request carries only a machine ID. The pad sells the machine, or once it is owned the
+-- machine's next level. It goes ahead only when `Logic/Purchase` agrees: the machine exists, it or its next level is
+-- for sale, the character stands at its pad and the cash is there. Then the cash is spent, the machine or level is
+-- saved, the pads change and the factory is rebuilt. If saving fails after the cash was spent, the cash is given back.
 --
--- State owned: the `factory.owned` section of every save (through DataService.mutate).
+-- State owned: the `factory.owned` and `factory.levels` sections of every save (through DataService.mutate).
 --
 -- Usage, in Main:
 --     PurchaseService.init()
@@ -55,6 +56,20 @@ local function ownedOf(player: Player): { [string]: boolean }?
 	return owned
 end
 
+-- The saved levels of machines this build knows.
+local function levelsOf(player: Player): { [string]: number }
+	local data = DataService.get(player)
+	local levels: { [string]: number } = {}
+	if data then
+		for id, level in data.factory.levels do
+			if Config.Buildables[id] then
+				levels[id] = level
+			end
+		end
+	end
+	return levels
+end
+
 local function ownedList(owned: { [string]: boolean }): { string }
 	local list: { string } = {}
 	for _, id in ids do
@@ -65,10 +80,10 @@ local function ownedList(owned: { [string]: boolean }): { string }
 	return list
 end
 
-local function refreshPads(player: Player, owned: { [string]: boolean })
+local function refreshPads(player: Player, owned: { [string]: boolean }, levels: { [string]: number })
 	local defs: { Types.BuildableDef } = {}
-	for _, id in Purchase.available(owned, Config.Buildables, ids) do
-		table.insert(defs, Config.Buildables[id])
+	for _, offer in Purchase.offers(owned, levels, Config.Buildables, ids, Config.Economy.levels) do
+		table.insert(defs, Config.Buildables[offer.id])
 	end
 	PlotService.showPads(player, defs)
 end
@@ -79,19 +94,21 @@ local function setUp(player: Player)
 	if owned == nil then
 		return
 	end
+	local levels = levelsOf(player)
 	local list = ownedList(owned)
 	for _, id in list do
 		PlotService.placeMachine(player, Config.Buildables[id])
 	end
-	refreshPads(player, owned)
-	FactoryService.rebuild(player, list)
+	refreshPads(player, owned, levels)
+	FactoryService.rebuild(player, list, levels)
 end
 
 -- Ground distance from the player's character to a pad's centre; infinite without a character.
 local function distanceToPad(player: Player, def: Types.BuildableDef): number
 	local character = player.Character
 	local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
-	local pad = PlotService.toWorld(player, def.pad)
+	local point = FactoryLayout.padPoint(def, Config.Factory)
+	local pad = if point then PlotService.toWorld(player, point) else nil
 	if root == nil or not root:IsA("BasePart") or pad == nil then
 		return math.huge
 	end
@@ -128,7 +145,8 @@ function PurchaseService.owns(player: Player, id: string): boolean
 end
 
 --[[
-	Buys a machine for the player, if every rule allows it. A refusal is sent to the client.
+	Buys what the machine's pad sells, the machine or its next level, if every rule allows it. A refusal is sent to the
+	client.
 	@param player who asked
 	@param id the machine's ID, from the request
 	@return nil when bought; otherwise the reason it was not (`Purchase.Reason`, or "failed" when the save could not
@@ -140,11 +158,14 @@ function PurchaseService.tryPurchase(player: Player, id: string): string?
 	if owned == nil or PlotService.getPlot(player) == nil then
 		return "failed"
 	end
+	local levels = levelsOf(player)
 	local reason = Purchase.check({
 		id = id,
 		owned = owned,
+		levels = levels,
 		cash = EconomyService.getCash(player),
 		buildables = Config.Buildables,
+		rules = Config.Economy.levels,
 		distance = if def then distanceToPad(player, def) else 0,
 		radius = FactoryLayout.padRadius(Config.Factory),
 	})
@@ -156,22 +177,31 @@ function PurchaseService.tryPurchase(player: Player, id: string): string?
 		ServerNet.send(player, Remotes.PurchaseRefused, { buildableId = id, reason = reason })
 		return reason
 	end
-	if not EconomyService.trySpend(player, def.price, "purchase") then
+	local offer = Purchase.offer(id, owned, levels, Config.Buildables, Config.Economy.levels) :: Purchase.Offer
+	if not EconomyService.trySpend(player, offer.price, if offer.upgrade then "level" else "purchase") then
 		return "failed"
 	end
-	local saved = DataService.mutate(player, "purchase", function(data)
-		data.factory.owned[id] = true
+	local saved = DataService.mutate(player, if offer.upgrade then "level" else "purchase", function(data)
+		if offer.upgrade then
+			data.factory.levels[id] = offer.level
+		else
+			data.factory.owned[id] = true
+		end
 	end)
 	if not saved then
-		EconomyService.add(player, def.price, "refund")
+		EconomyService.add(player, offer.price, "refund")
 		Log.error(TAG, "purchase could not be saved; cash refunded", { userId = player.UserId, id = id })
 		return "failed"
 	end
-	owned[id] = true
-	PlotService.placeMachine(player, def)
-	refreshPads(player, owned)
-	FactoryService.rebuild(player, ownedList(owned))
-	Log.info(TAG, "bought", { userId = player.UserId, id = id, price = def.price })
+	if offer.upgrade then
+		levels[id] = offer.level
+	else
+		owned[id] = true
+		PlotService.placeMachine(player, def)
+	end
+	refreshPads(player, owned, levels)
+	FactoryService.rebuild(player, ownedList(owned), levels)
+	Log.debug(TAG, "bought", { userId = player.UserId, id = id, level = offer.level, price = offer.price })
 	return nil
 end
 
@@ -184,6 +214,7 @@ end
 function PurchaseService.reset(player: Player): boolean
 	local ok = DataService.mutate(player, "devReset", function(data)
 		data.factory.owned = {}
+		data.factory.levels = {}
 	end)
 	if ok then
 		PlotService.clearFactory(player)

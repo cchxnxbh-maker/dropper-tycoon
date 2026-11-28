@@ -215,9 +215,10 @@ function PlotService.placeMachine(player: Player, def: Types.BuildableDef): bool
 end
 
 --[[
-	Replaces the purchase pads on the player's plot.
+	Sets which purchase pads the player's plot shows. A pad that stays (one selling its next level) is kept as it is,
+	so a player standing on it is not knocked off.
 	@param player the plot's owner
-	@param defs the machines whose pads should show, usually `Purchase.available`
+	@param defs the machines whose pads should show, from `Purchase.offers`
 	@return true when shown; false when the player holds no plot
 ]]
 function PlotService.showPads(player: Player, defs: { Types.BuildableDef }): boolean
@@ -226,8 +227,19 @@ function PlotService.showPads(player: Player, defs: { Types.BuildableDef }): boo
 		return false
 	end
 	local plot = plots[index]
-	plot.pads:ClearAllChildren()
+	local wanted: { [string]: boolean } = {}
 	for _, def in defs do
+		wanted[def.id] = true
+	end
+	for _, existing in plot.pads:GetChildren() do
+		if not wanted[existing.Name] then
+			existing:Destroy()
+		end
+	end
+	for _, def in defs do
+		if plot.pads:FindFirstChild(def.id) then
+			continue
+		end
 		local pad = Builder.box(FactoryLayout.pad(def, Config.Factory), plot.pivot, plot.pads)
 		pad.Name = def.id
 		pad.Material = Enum.Material.Neon

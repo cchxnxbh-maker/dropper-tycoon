@@ -1,5 +1,5 @@
 --!strict
--- SilverDropper: the fourth dropper.
+-- SilverDropper: a dropper on the front row.
 -- Every number is a starting value for the balance pass. Rules: `Config/Schema.luau` and the kind's own file in
 -- `Logic/Kinds/Dropper.luau`.
 
@@ -9,11 +9,11 @@ local SilverDropper: Types.BuildableDef = {
 	id = "SilverDropper",
 	kind = "Dropper",
 	tier = 1,
-	price = 1500,
-	requires = { "IronDropper" },
+	price = 3300,
+	requires = { "Sorter" },
 	line = "Main",
-	params = { itemValue = 30, interval = 3, at = 35 },
-	pad = { x = -30, z = -26 },
+	params = { itemValue = 35, interval = 3, at = 320, perLevel = 0.5 },
+	levelPrice = 1100,
 }
 
 return SilverDropper

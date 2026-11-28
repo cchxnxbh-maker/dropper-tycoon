@@ -142,12 +142,20 @@ describe("Schema buildable rules", function()
 		expect(string.find(problems[2], "Buildables.Washer.requires.2", 1, true) ~= nil).toBe(true)
 	end)
 
+	it("rejects levels on a kind that has none", function()
+		local config = good()
+		config.Buildables.StarterConveyor.levelPrice = 5
+		expect(Schema.validate(config)).toEqual({
+			"Buildables.StarterConveyor.levelPrice: a Conveyor has no levels; remove it",
+		})
+	end)
+
 	it("rejects a requirement that does not exist and a machine with no name", function()
 		local config = good()
-		config.Buildables.CoalDropper.requires = { "RubyDropper" }
+		config.Buildables.CoalDropper.requires = { "OnyxDropper" }
 		config.Strings.Buildables.washer = nil
 		expect(Schema.validate(config)).toEqual({
-			'Buildables.CoalDropper.requires: "RubyDropper" is not a buildable',
+			'Buildables.CoalDropper.requires: "OnyxDropper" is not a buildable',
 			"Strings.Buildables.washer: missing; every machine needs a name",
 		})
 	end)
