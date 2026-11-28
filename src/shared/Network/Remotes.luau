@@ -33,6 +33,25 @@ local Remotes = Net.define({
 			serverTime = Validate.number({ min = 0 }),
 		}),
 	}),
+	-- The dev panel asks the server to run one dev command by name (task 10). The server decides who may: Studio, the
+	-- experience owner and the allow-list in `server/Config/DevAccess.luau`. Anyone else is ignored.
+	RequestDevCommand = Net.toServer({
+		payload = Validate.record({
+			command = Validate.string({
+				pattern = "^%u%w*$",
+				hint = "like AddTestCounter (PascalCase)",
+				maxLength = 40,
+			}),
+		}),
+		rate = { burst = 5, perSecond = 3 },
+		example = { command = "AddTestCounter" },
+	}),
+	-- What the dev panel shows. Sent only to players allowed to use it: on join, and after each command.
+	DevPanelState = Net.toClient({
+		payload = Validate.record({
+			testCounter = Validate.number({ integer = true, min = 0 }),
+		}),
+	}),
 })
 
 return Remotes

@@ -25,9 +25,10 @@ new record that supersedes it.
 | [0017](0017-config-loading-and-validation.md) | How config is loaded, checked and indexed | Accepted | Claude's recommendation, accepted by Daniel |
 | [0018](0018-network-layer-details.md) | How the network layer is built (payload rules use Validate instead of `t`, updating 0011) | Accepted | Claude's recommendation, accepted by Daniel |
 | [0019](0019-save-data-layer.md) | How saves are loaded, checked and changed | Accepted | Claude's recommendation, accepted by Daniel |
+| [0020](0020-plots-streaming-and-dev-panel.md) | The six-plot place: plots built by code, streaming in the Rojo project, a dev panel | Proposed | Claude's recommendation, waiting for Daniel |
 
 "Build plan" means the plan's recommendation, which Daniel accepted when he approved the plan.
 
 ## Still open
 
-- **Theme and name.** Needed before art starts in Phase 2. When decided, it gets the next free record number.
+- **Theme and name.** Needed before art starts in Phase 2. When decided, it gets record number 0021.

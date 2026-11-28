@@ -23,6 +23,20 @@ local function good(): any
 				clientRateShare = 0.8,
 			},
 		},
+		Plots = {
+			count = 6,
+			ringRadius = 250,
+			baseSize = 160,
+			baseThickness = 1,
+			spawnInset = 16,
+			spawnSize = 8,
+			padThickness = 0.4,
+			signWidth = 24,
+			signHeight = 8,
+			signThickness = 1,
+			signLift = 4,
+			colors = { base = "#6E9A5A", spawn = "#E3C35A", sign = "#2F3B45" },
+		},
 		Strings = { Net = { kicked = "Bye." } },
 		Buildables = { CoalDropper = { id = "CoalDropper" } },
 	}
@@ -95,6 +109,23 @@ describe("Schema.validate", function()
 		expect(Schema.validate(config)).toEqual({
 			'Strings.Net.Shout (name): must look like kicked (camelCase), got "Shout"',
 			'Strings.Net.kicked: must look like real words (not empty), got "  "',
+		})
+	end)
+
+	it("rejects plots that would overlap their neighbours", function()
+		local config = good()
+		config.Plots.baseSize = 200
+		expect(Schema.validate(config)).toEqual({
+			"Plots.baseSize: neighbouring plots overlap; centres are 250 studs apart but a plot needs 283. Make baseSize"
+				.. " smaller or ringRadius larger",
+		})
+	end)
+
+	it("rejects a colour that is not a hex code", function()
+		local config = good()
+		config.Plots.colors.base = "green"
+		expect(Schema.validate(config)).toEqual({
+			'Plots.colors.base: must look like #6E9A5A (a # and six hex digits), got "green"',
 		})
 	end)
 

@@ -41,6 +41,21 @@ export type Tuning = {
 	},
 }
 
+export type Plots = {
+	count: number,
+	ringRadius: number,
+	baseSize: number,
+	baseThickness: number,
+	spawnInset: number,
+	spawnSize: number,
+	padThickness: number,
+	signWidth: number,
+	signHeight: number,
+	signThickness: number,
+	signLift: number,
+	colors: { base: string, spawn: string, sign: string },
+}
+
 -- Player-facing text: system name, then key, then the text.
 export type Strings = { [string]: { [string]: string } }
 
@@ -49,6 +64,7 @@ export type Config = {
 	Build: Build,
 	Flags: Flags,
 	Tuning: Tuning,
+	Plots: Plots,
 	Strings: Strings,
 	Buildables: { [string]: any },
 }

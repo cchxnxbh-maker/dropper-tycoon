@@ -4,6 +4,7 @@
 
 local index: { [string]: any } = {
 	v001_initial = require("@self/v001_initial"),
+	v002_dev_counter = require("@self/v002_dev_counter"),
 }
 
 return index

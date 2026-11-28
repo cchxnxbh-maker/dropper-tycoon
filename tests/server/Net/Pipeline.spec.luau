@@ -105,14 +105,14 @@ describe("Pipeline", function()
 			strikeWindowSeconds = WINDOW,
 			kickAfterStrikes = KICK_AFTER,
 		})
-		expect(pipeline.unhandled()).toEqual({ "RequestTestPing" })
+		expect(pipeline.unhandled()).toEqual({ "RequestDevCommand", "RequestTestPing" })
 		pipeline.handle("RequestTestPing", function()
 			error("boom")
 		end)
 		local result = pipeline.receive(PLAYER, "p", "RequestTestPing", good, 0)
 		expect(result.outcome).toBe("error")
 		expect(result.strikes).toBe(0)
-		expect(pipeline.unhandled()).toEqual({})
+		expect(pipeline.unhandled()).toEqual({ "RequestDevCommand" })
 	end)
 
 	it("refuses a handler for a server-to-client remote or a second handler", function()
@@ -173,9 +173,26 @@ describe("Abuse suite (generated from Remotes.luau)", function()
 			table.insert(outcomes, pipeline.receive(PLAYER, "p", case.remote, case.payload, 0).outcome)
 		end
 		expect(AbuseCases.evaluate(cases, outcomes, Remotes, 0)).toEqual({})
-		-- State unchanged by anything hostile: handlers only ever saw the remote's own example.
+		-- State unchanged by anything hostile: handlers only ever saw a remote's own example.
+		local examples: { any } = {}
+		for _, remote in Remotes :: any do
+			if remote.direction == "toServer" then
+				table.insert(examples, remote.example)
+			end
+		end
 		for _, payload in seen do
-			expect(payload).toEqual(Remotes.RequestTestPing.example)
+			local matched = false
+			for _, example in examples do
+				local same = true
+				for key, value in example do
+					same = same and payload[key] == value
+				end
+				for key in payload do
+					same = same and example[key] ~= nil
+				end
+				matched = matched or same
+			end
+			expect(matched).toBe(true)
 		end
 	end)
 
@@ -186,8 +203,11 @@ describe("Abuse suite (generated from Remotes.luau)", function()
 		end
 		outcomes[1] = "accepted"
 		local failures = AbuseCases.evaluate(cases, outcomes, Remotes, 0)
+		expect(cases[1].remote).toBe("RequestDevCommand")
 		expect(failures).toEqual({
-			`RequestTestPing: {cases[1].name}: expected a payload rejection, got accepted`,
+			`RequestDevCommand: {cases[1].name}: expected a payload rejection, got accepted`,
+			"RequestDevCommand: spam let 100 through, the limit allows 4",
+			"RequestDevCommand: spam was never rate limited",
 			"RequestTestPing: spam let 100 through, the limit allows 4",
 			"RequestTestPing: spam was never rate limited",
 		})
