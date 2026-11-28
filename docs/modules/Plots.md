@@ -1,6 +1,6 @@
 # Plots
 
-Files: `src/server/Services/PlotService.luau`, `src/shared/Logic/PlotLayout.luau`, `src/shared/Logic/PlotSlots.luau`,
+Files: `src/server/Services/PlotService/` (`init.luau` holds who has which plot, `Builder.luau` makes the parts), `src/shared/Logic/PlotLayout.luau`, `src/shared/Logic/PlotSlots.luau`,
 `src/shared/Config/Plots.luau`, `src/shared/Util/WorldKeys.luau`, `src/client/Controllers/PlotSignController.luau`,
 `src/client/Views/PlotSign.luau`, streaming settings in `default.project.json`. Specs:
 `tests/shared/Logic/PlotLayout.spec.luau`, `tests/shared/Logic/PlotSlots.spec.luau`. Plan sections 3.4, 4.4 and 4.8.
@@ -9,7 +9,14 @@ Decision: ADR 0020.
 ```luau
 PlotService.getPlot(player)        -- the player's plot Model, or nil while loading
 PlotService.getPlotIndex(player)   -- 1 to 6, or nil
+PlotService.plotAssigned           -- signal: (player) once they have a plot
+PlotService.placeMachine(player, def)   -- grey-box parts of a bought machine, in the plot's Machines folder
+PlotService.showPads(player, defs)      -- replaces the purchase pads, in the plot's Pads folder
+PlotService.clearFactory(player)        -- removes every machine and pad
+PlotService.toWorld(player, point)      -- a plot point from config, in world space
 ```
+
+The factory parts are described in `docs/modules/Factory.md`.
 
 ## The layout
 

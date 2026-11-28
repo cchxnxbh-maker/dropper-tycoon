@@ -72,8 +72,28 @@ describe("Save fixtures", function()
 				schemaVersion = CURRENT,
 				meta = { joins = 0, firstJoin = 0, lastJoin = 0 },
 				dev = { testCounter = 0 },
+				economy = { cash = 0 },
+				factory = { owned = {} },
 			})
 		end
+	end)
+
+	it("keeps a version 2 save's values and starts it with no cash and no machines", function()
+		local result = SaveLoad.prepare(Fixtures.v002, Migrations, SaveSchema)
+		expect(result.kind).toBe("ready")
+		if result.kind == "ready" then
+			expect(result.data.meta).toEqual(Fixtures.v002.meta)
+			expect(result.data.dev).toEqual(Fixtures.v002.dev)
+			expect(result.data.economy).toEqual({ cash = 0 })
+			expect(result.data.factory).toEqual({ owned = {} })
+		end
+	end)
+
+	it("refuses negative cash and owned entries that are not true or false", function()
+		local data = table.clone(Fixtures.v003) :: any
+		data.economy = { cash = -1 }
+		data.factory = { owned = { CoalDropper = 1 } }
+		expect(#SaveSchema.validate(data)).toBe(2)
 	end)
 
 	it("keeps a version 1 save's values and starts its test counter at 0", function()

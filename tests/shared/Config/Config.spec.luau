@@ -7,39 +7,24 @@ local describe, it, expect = testkit.describe, testkit.it, testkit.expect
 local Config = require("../../../src/shared/Config")
 local Schema = require("../../../src/shared/Config/Schema")
 
--- A valid config to break one value at a time.
+-- A valid config to break one value at a time: a copy of the real one, with small known values where tests read them.
+local function copy(value: any): any
+	if type(value) ~= "table" then
+		return value
+	end
+	local out = {}
+	for key, inner in value do
+		out[key] = copy(inner)
+	end
+	return out
+end
+
 local function good(): any
-	return {
-		Build = { version = "1.2.3", devPlaceId = 1 },
-		Flags = { Features = { offlineEarnings = false }, Log = { default = "info", tags = { Purchase = "debug" } } },
-		Tuning = {
-			Timing = { simRate = 10, maxCatchUpSteps = 5 },
-			Network = {
-				maxStringLength = 200,
-				maxTableDepth = 3,
-				maxTableEntries = 32,
-				strikeWindowSeconds = 60,
-				kickAfterStrikes = 30,
-				clientRateShare = 0.8,
-			},
-		},
-		Plots = {
-			count = 6,
-			ringRadius = 250,
-			baseSize = 160,
-			baseThickness = 1,
-			spawnInset = 16,
-			spawnSize = 8,
-			padThickness = 0.4,
-			signWidth = 24,
-			signHeight = 8,
-			signThickness = 1,
-			signLift = 4,
-			colors = { base = "#6E9A5A", spawn = "#E3C35A", sign = "#2F3B45" },
-		},
-		Strings = { Net = { kicked = "Bye." } },
-		Buildables = { CoalDropper = { id = "CoalDropper" } },
-	}
+	local config = copy(require("../../../src/shared/Config/Sources"))
+	config.Build = { version = "1.2.3", devPlaceId = 1 }
+	config.Flags = { Features = { offlineEarnings = false }, Log = { default = "info", tags = { Purchase = "debug" } } }
+	config.Strings.Net = { kicked = "Bye." }
+	return config
 end
 
 describe("Config", function()
@@ -134,6 +119,48 @@ describe("Schema.validate", function()
 		config.Buildables.CoalDropper.id = "IronDropper"
 		expect(Schema.validate(config)).toEqual({
 			'Buildables.CoalDropper.id: must match the file name "CoalDropper", got "IronDropper"',
+		})
+	end)
+end)
+
+describe("Schema buildable rules", function()
+	it("rejects params that break the kind's rule", function()
+		local config = good()
+		config.Buildables.CoalDropper.params.interval = 0
+		expect(Schema.validate(config)).toEqual({
+			"Buildables.CoalDropper.params.interval: must be at least 0.1, got 0",
+		})
+	end)
+
+	it("rejects an unknown kind and a requirement list with gaps", function()
+		local config = good()
+		config.Buildables.CoalDropper.kind = "Furnace"
+		config.Buildables.Washer.requires = { [2] = "CoalDropper" }
+		local problems = Schema.validate(config)
+		expect(#problems).toBe(2)
+		expect(string.find(problems[1], "Buildables.CoalDropper.kind", 1, true) ~= nil).toBe(true)
+		expect(string.find(problems[2], "Buildables.Washer.requires.2", 1, true) ~= nil).toBe(true)
+	end)
+
+	it("rejects a requirement that does not exist and a machine with no name", function()
+		local config = good()
+		config.Buildables.CoalDropper.requires = { "GoldDropper" }
+		config.Strings.Buildables.washer = nil
+		expect(Schema.validate(config)).toEqual({
+			'Buildables.CoalDropper.requires: "GoldDropper" is not a buildable',
+			"Strings.Buildables.washer: missing; every machine needs a name",
+		})
+	end)
+
+	it("rejects requirements that loop, naming every machine caught in the loop", function()
+		local config = good()
+		config.Buildables.StarterConveyor.requires = { "Washer" }
+		expect(Schema.validate(config)).toEqual({
+			"Buildables.BasicCollector.requires: the requirements loop back to BasicCollector",
+			"Buildables.CoalDropper.requires: the requirements loop back to CoalDropper",
+			"Buildables.CopperDropper.requires: the requirements loop back to CopperDropper",
+			"Buildables.StarterConveyor.requires: the requirements loop back to StarterConveyor",
+			"Buildables.Washer.requires: the requirements loop back to Washer",
 		})
 	end)
 end)

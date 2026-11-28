@@ -1,5 +1,5 @@
 --!strict
--- Tuning: simulation timing and network limits; sync rates and distances join as their systems arrive (plan section 5.1).
+-- Tuning: simulation timing, sync rates and network limits; distances join as their systems arrive (plan section 5.1).
 -- Each remote's own rate limit sits beside it in `Network/Remotes.luau`.
 -- Ranges are checked by `Config/Schema.luau`. Read it through `Config`, which validates and freezes it.
 --
@@ -17,6 +17,13 @@ local Tuning: Types.Tuning = {
 		simRate = 10,
 		-- Most fixed steps one frame may run. Time beyond this is paid by formula, so stalls never spiral.
 		maxCatchUpSteps = 5,
+	},
+	Sync = {
+		-- Most cash updates the server sends one player per second. The counter between them is predicted.
+		cashPerSecond = 10,
+		-- Seconds between writes of a player's cash into their save. Spends are written at once; ProfileStore saves to
+		-- Roblox on its own schedule, so this only bounds how stale the in-memory save copy gets.
+		cashSaveSeconds = 2,
 	},
 	Network = {
 		-- Longest text, in characters, any client request may carry anywhere. Requests carry IDs, so this is generous.

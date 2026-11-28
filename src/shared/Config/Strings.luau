@@ -38,6 +38,28 @@ local Strings: Types.Strings = {
 		-- Shown when every plot is taken. Max Players should prevent this; it is the safety net.
 		serverFull = "This server has no free plot. Please rejoin to find another server.",
 	},
+	-- Machine names, shown on purchase pads. Each buildable's key is its ID with a lowercase first letter.
+	Buildables = {
+		starterConveyor = "Conveyor",
+		basicCollector = "Collector",
+		coalDropper = "Coal Dropper",
+		copperDropper = "Copper Dropper",
+		washer = "Washer",
+	},
+	Purchase = {
+		-- Under a machine's name on its pad. {price} is the formatted price.
+		price = "${price}",
+		-- On the pad of a free machine.
+		free = "Free",
+		-- Shown briefly when the player steps on a pad they cannot afford yet.
+		notEnoughCash = "Not enough cash yet",
+	},
+	Hud = {
+		-- The cash counter. {cash} is the formatted amount.
+		cash = "${cash}",
+		-- Under the cash counter. {rate} is the formatted cash per second.
+		rate = "+${rate}/s",
+	},
 	DevPanel = {
 		-- Heading of the developer panel, seen only in Studio and by the allowed accounts.
 		title = "Dev panel",
@@ -45,6 +67,10 @@ local Strings: Types.Strings = {
 		counter = "Test counter: {value}",
 		-- The button that adds one to the test counter.
 		addCounter = "Add 1",
+		-- The button that adds test cash. {amount} is how much.
+		giveCash = "Give ${amount}",
+		-- The button that sells back every machine and sets cash to zero, to test the start again.
+		resetFactory = "Reset factory",
 	},
 }
 

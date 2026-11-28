@@ -105,14 +105,14 @@ describe("Pipeline", function()
 			strikeWindowSeconds = WINDOW,
 			kickAfterStrikes = KICK_AFTER,
 		})
-		expect(pipeline.unhandled()).toEqual({ "RequestDevCommand", "RequestTestPing" })
+		expect(pipeline.unhandled()).toEqual({ "RequestDevCommand", "RequestPurchase", "RequestTestPing" })
 		pipeline.handle("RequestTestPing", function()
 			error("boom")
 		end)
 		local result = pipeline.receive(PLAYER, "p", "RequestTestPing", good, 0)
 		expect(result.outcome).toBe("error")
 		expect(result.strikes).toBe(0)
-		expect(pipeline.unhandled()).toEqual({ "RequestDevCommand" })
+		expect(pipeline.unhandled()).toEqual({ "RequestDevCommand", "RequestPurchase" })
 	end)
 
 	it("refuses a handler for a server-to-client remote or a second handler", function()
@@ -208,6 +208,8 @@ describe("Abuse suite (generated from Remotes.luau)", function()
 			`RequestDevCommand: {cases[1].name}: expected a payload rejection, got accepted`,
 			"RequestDevCommand: spam let 100 through, the limit allows 4",
 			"RequestDevCommand: spam was never rate limited",
+			"RequestPurchase: spam let 100 through, the limit allows 5",
+			"RequestPurchase: spam was never rate limited",
 			"RequestTestPing: spam let 100 through, the limit allows 4",
 			"RequestTestPing: spam was never rate limited",
 		})

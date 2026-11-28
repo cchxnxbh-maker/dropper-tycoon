@@ -15,8 +15,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AbuseCases = require(Shared:WaitForChild("Network"):WaitForChild("AbuseCases"))
 local ClientNet = require(script.Parent.Parent.Net.ClientNet)
+local Config = require(Shared:WaitForChild("Config"))
 local DevPanel = require(script.Parent.Parent.UI.Screens.DevPanel)
+local NumberFormat = require(Shared:WaitForChild("Logic"):WaitForChild("NumberFormat"))
 local Remotes = require(Shared:WaitForChild("Network"):WaitForChild("Remotes"))
+local Text = require(Shared:WaitForChild("Util"):WaitForChild("Text"))
 local Trove = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Trove"))
 
 local DevPanelController = {}
@@ -32,13 +35,22 @@ local function show(): DevPanel.View
 	gui.Name = "DevPanel"
 	gui.ResetOnSpawn = false
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+	local strings = Config.Strings.DevPanel
 	local mounted = DevPanel.mount(gui, {
-		onAddCounter = function()
+		buttons = {
+			{ text = strings.addCounter, command = "AddTestCounter" },
+			{
+				text = Text.format(strings.giveCash, { amount = NumberFormat.cash(Config.Economy.devCashGift) }),
+				command = "GiveCash",
+			},
+			{ text = strings.resetFactory, command = "ResetFactory" },
+		},
+		onCommand = function(command: string)
 			-- While the Studio abuse suite runs, the server counts every request it gets; a press would spoil the count.
 			if Players.LocalPlayer:GetAttribute(AbuseCases.ATTRIBUTE) == true then
 				return
 			end
-			ClientNet.send(Remotes.RequestDevCommand, { command = "AddTestCounter" })
+			ClientNet.send(Remotes.RequestDevCommand, { command = command })
 		end,
 	})
 	trove:Add(mounted, "destroy")

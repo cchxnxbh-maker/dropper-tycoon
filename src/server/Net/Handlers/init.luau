@@ -4,6 +4,7 @@
 
 local index: { [string]: any } = {
 	RequestDevCommand = require("@self/RequestDevCommand"),
+	RequestPurchase = require("@self/RequestPurchase"),
 	RequestTestPing = require("@self/RequestTestPing"),
 }
 
