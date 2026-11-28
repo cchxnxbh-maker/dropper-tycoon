@@ -27,7 +27,7 @@ new record that supersedes it.
 | [0019](0019-save-data-layer.md) | How saves are loaded, checked and changed | Accepted | Claude's recommendation, accepted by Daniel |
 | [0020](0020-plots-streaming-and-dev-panel.md) | The six-plot place: plots built by code, streaming in the Rojo project, a dev panel | Accepted | Claude's recommendation, accepted by Daniel |
 | [0021](0021-first-factory.md) | How the first factory works: periodic items, grey boxes by code, pads, in-memory cash | Accepted | Claude's recommendation, accepted by Daniel |
-| [0022](0022-balance-tool-and-cash-prediction.md) | The balance tool joins the check; the cash counter is predicted from the client's factory mirror | Proposed | Claude's recommendation, waiting for Daniel |
+| [0022](0022-balance-tool-and-cash-prediction.md) | The balance tool joins the check; the cash counter is predicted from the client's factory mirror | Accepted | Claude's recommendation, accepted by Daniel |
 
 "Build plan" means the plan's recommendation, which Daniel accepted when he approved the plan.
 
