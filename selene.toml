@@ -1,6 +1,8 @@
 # Lint rules (ADR 0015). `project.yml` bans wait, spawn, delay and math.random by marking them deprecated.
 # It comes first because, when two libraries define the same name, Selene keeps the first one.
 std = "project+roblox"
+# Vendored code is kept byte for byte, so it is not linted (ADR 0019).
+exclude = ["src/server/Vendor/**"]
 
 [lints]
 deprecated = "deny"

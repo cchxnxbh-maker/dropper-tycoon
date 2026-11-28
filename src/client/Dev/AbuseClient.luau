@@ -20,8 +20,9 @@ local Config = require(Shared:WaitForChild("Config"))
 local RemoteFolder = require(Shared:WaitForChild("Network"):WaitForChild("RemoteFolder"))
 local Remotes = require(Shared:WaitForChild("Network"):WaitForChild("Remotes"))
 
--- How long the client waits for the server to start the suite. The server starts it as soon as this player joins.
-local START_TIMEOUT_SECONDS = 10
+-- How long the client waits for the server to start the suite. The server starts it once this player's save has
+-- loaded, which can take a few seconds when Studio saves to the real Dev data store.
+local START_TIMEOUT_SECONDS = 30
 -- How often the client looks at the attribute while it waits. Polling, so a timeout works even if it never changes.
 local POLL_SECONDS = 0.1
 
