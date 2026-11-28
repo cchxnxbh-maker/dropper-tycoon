@@ -1,8 +1,8 @@
 # 0021. How the first factory works: periodic items, grey boxes by code, pads, in-memory cash
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-28
-- **Decided by:** Claude's recommendation, waiting for Daniel
+- **Decided by:** Claude's recommendation, accepted by Daniel (2026-11-28)
 
 ## Context
 
