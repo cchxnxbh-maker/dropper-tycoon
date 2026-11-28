@@ -2,9 +2,9 @@
 -- AbuseSuite (server half): runs the generated abuse suite through the real remotes in a Studio playtest (plan
 -- section 8.2, task 8).
 --
--- When the first player joins a Studio playtest, the server puts them in audit mode and sets an attribute on them.
--- Their client (`client/Dev/AbuseClient.luau`) then fires every case from `AbuseCases` through the real RemoteEvents.
--- The server records each outcome in arrival order, compares them with the expected ones and prints one summary
+-- When the first player's save is loaded in a Studio playtest (requests are only accepted from then on), the server
+-- puts them in audit mode and sets an attribute on them. Their client (`client/Dev/AbuseClient.luau`) then fires
+-- every case from `AbuseCases` through the real RemoteEvents. The server records each outcome in arrival order, compares them with the expected ones and prints one summary
 -- line. Audit mode means no handler runs and nobody is kicked, so the suite changes no game state.
 --
 -- Runs only in Studio and only while `Flags.Features.studioAbuseSuite` is on. Never on a real server.
@@ -20,6 +20,7 @@ local RunService = game:GetService("RunService")
 
 local AbuseCases = require(ReplicatedStorage.Shared.Network.AbuseCases)
 local Config = require(ReplicatedStorage.Shared.Config)
+local DataService = require(script.Parent.Parent.Services.DataService)
 local Log = require(ReplicatedStorage.Shared.Util.Log)
 local Remotes = require(ReplicatedStorage.Shared.Network.Remotes)
 local ServerNet = require(script.Parent.Parent.Net.ServerNet)
@@ -74,16 +75,18 @@ local function tryRun(player: Player)
 end
 
 --[[
-	Runs the suite for the first player to join, in Studio only and only when the flag is on. Does nothing otherwise.
+	Runs the suite for the first player whose save loads, in Studio only and only when the flag is on. Does nothing
+	otherwise. Call after DataService.start.
 ]]
 function AbuseSuite.start()
 	if not RunService:IsStudio() or not Config.Flags.Features.studioAbuseSuite then
 		return
 	end
-	trove:Connect(Players.PlayerAdded, tryRun)
-	local present = Players:GetPlayers()
-	if #present > 0 then
-		tryRun(present[1])
+	trove:Add(DataService.profileLoaded:Connect(tryRun))
+	for _, player in Players:GetPlayers() do
+		if DataService.isPlaying(player) then
+			tryRun(player)
+		end
 	end
 end
 

@@ -97,6 +97,8 @@ local function typeCheck(): boolean
 		`--definitions=@roblox={defs}`,
 		"--ignore=Packages/**",
 		"--ignore=**/Packages/**",
+		-- Vendored code is kept byte for byte (ADR 0019); its exported types are still used by the code that requires it.
+		"--ignore=src/server/Vendor/**",
 	}
 	return exec("luau-lsp", joined(args, ANALYZE_PATHS))
 end

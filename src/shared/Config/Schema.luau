@@ -26,6 +26,7 @@ local level = Validate.string({ oneOf = LEVELS })
 local rules = Validate.record({
 	Build = Validate.record({
 		version = Validate.string({ pattern = "^%d+%.%d+%.%d+$", hint = "like 1.2.3 (three whole numbers)" }),
+		devPlaceId = Validate.number({ integer = true, min = 1 }),
 	}),
 	Flags = Validate.record({
 		Features = Validate.map(

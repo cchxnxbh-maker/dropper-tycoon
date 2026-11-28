@@ -10,7 +10,7 @@ local Schema = require("../../../src/shared/Config/Schema")
 -- A valid config to break one value at a time.
 local function good(): any
 	return {
-		Build = { version = "1.2.3" },
+		Build = { version = "1.2.3", devPlaceId = 1 },
 		Flags = { Features = { offlineEarnings = false }, Log = { default = "info", tags = { Purchase = "debug" } } },
 		Tuning = {
 			Timing = { simRate = 10, maxCatchUpSteps = 5 },

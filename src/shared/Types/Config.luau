@@ -15,6 +15,8 @@ export type LogLevel = Log.Level
 export type Build = {
 	-- Semantic version shown in the settings screen and on every log line, such as "0.3.0".
 	version: string,
+	-- Place ID of the Dev experience's place. In Studio, only this place may use real data stores.
+	devPlaceId: number,
 }
 
 export type Flags = {

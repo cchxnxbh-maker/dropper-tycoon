@@ -23,7 +23,7 @@ ServerNet.send(player, Remotes.TestPong, { label = "hello", serverTime = os.time
    Extra arguments beyond the one payload also fail here.
 2. **The remote's own rule**, written with `Logic/Validate` in `Remotes.luau`.
 3. **The remote's rate limit** for this player: `burst` at once, then `perSecond`.
-4. **Session state is Playing.** Until task 9 adds the session state machine, every player counts.
+4. **Session state is Playing**, from `DataService.isPlaying`: requests before the save has loaded are dropped.
 5. **The handler** in `server/Net/Handlers/<RemoteName>.luau`, which checks ownership, distance and price itself.
 
 Steps 1 to 4 failing drop the request and add a strike. `kickAfterStrikes` (30) strikes inside

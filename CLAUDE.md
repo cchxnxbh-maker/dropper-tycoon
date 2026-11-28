@@ -107,6 +107,7 @@ functions or listen to its signals.
 ## Code style
 
 - `--!strict` on line one of every module. Only the two `Main` files are Scripts; everything else is a ModuleScript.
+  Vendored code in `src/server/Vendor` is kept byte for byte and skipped by StyLua, Selene and luau-lsp (ADR 0019).
 - StyLua decides layout. PascalCase for modules and types, camelCase for functions and variables, UPPER_SNAKE for
   constants.
 - `task` library only. No `wait`, `spawn`, `delay` or `math.random`. Randomness comes from `Rng.stream(name)`.

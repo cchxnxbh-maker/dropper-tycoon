@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 
 local AbuseSuite = require(script.Parent.Dev.AbuseSuite)
 local Config = require(ReplicatedStorage.Shared.Config)
+local DataService = require(script.Parent.Services.DataService)
 local Handlers = require(script.Parent.Net.Handlers)
 local Log = require(ReplicatedStorage.Shared.Util.Log)
 local Rng = require(ReplicatedStorage.Shared.Logic.Rng)
@@ -21,9 +22,13 @@ Log.setBuild(Config.Build.version)
 local seed = DateTime.now().UnixTimestampMillis % 4294967296
 Rng.seed(seed)
 
--- Init everything, then start everything, in order. Services join here from task 9 on.
+-- Init everything, then start everything, in order (CLAUDE.md, service start order). Requests are handled only for
+-- players whose save is loaded.
+DataService.init()
 ServerNet.init(Handlers)
+ServerNet.setSessionGate(DataService.isPlaying)
 
+DataService.start()
 ServerNet.start()
 AbuseSuite.start()
 

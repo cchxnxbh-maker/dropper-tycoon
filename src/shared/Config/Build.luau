@@ -12,6 +12,8 @@ local Types = require("../Types/Config")
 
 local Build: Types.Build = {
 	version = "0.0.0",
+	-- The "Dropper Tycoon Dev" place. Studio saves to real data stores only on this place (ADR 0019).
+	devPlaceId = 132092742858169,
 }
 
 return Build
