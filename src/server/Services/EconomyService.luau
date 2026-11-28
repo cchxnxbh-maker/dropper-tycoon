@@ -19,6 +19,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local DataService = require(script.Parent.DataService)
@@ -92,7 +93,7 @@ local function sync()
 	for player, wallet in wallets do
 		if wallet.unsent then
 			wallet.unsent = false
-			ServerNet.send(player, Remotes.CashSync, { cash = wallet.cash })
+			ServerNet.send(player, Remotes.CashSync, { cash = wallet.cash, serverTime = Workspace:GetServerTimeNow() })
 		end
 		if saveNow then
 			save(player, wallet)

@@ -13,6 +13,7 @@ FactorySim.skip(sim, seconds)        -- time past the catch-up cap, paid by the 
 FactorySim.incomeRate(sim)           -- cash per second
 FactorySim.starts(sim)               -- each dropper's start step, for a rebuild or the client
 FactorySim.itemsAt(sim, tick, out, maxPerDropper)  -- where each item is, for drawing
+FactorySim.earnedBetween(sim, fromTick, toTick)     -- cash arriving in between, without stepping
 
 FactoryService.rebuild(player, ownedIds)   -- after a purchase or on join; tells the client
 FactoryService.remove(player)
@@ -46,6 +47,28 @@ After each rebuild the client gets `FactoryState`: owned IDs, `starts`, the step
 rate. FactoryViewController builds the same sim and every frame asks `itemsAt` for the step that matches
 `workspace:GetServerTimeNow()`, then moves pooled box parts there with `BulkMoveTo`. Boxes are anchored and never
 collide, touch or block. Only the player's own plot is drawn (backlog B-2).
+
+## The machines (tier 1)
+
+Twelve machines, every number a starting value (`lune run balance` shows the pacing they give):
+
+| Machine | Kind | Price | What it does | Needs |
+| --- | --- | --- | --- | --- |
+| StarterConveyor | Conveyor | Free | Belt, 8 studs a second | |
+| BasicCollector | Collector | Free | Pays items at 1x | StarterConveyor |
+| CoalDropper | Dropper | Free | $2 every 2 s | BasicCollector |
+| CopperDropper | Dropper | $30 | $5 every 2.5 s | CoalDropper |
+| Washer | Upgrader | $150 | 1.5x at 60 studs | CopperDropper |
+| IronDropper | Dropper | $500 | $12 every 3 s | CopperDropper |
+| FastConveyor | Conveyor | $900 | Belt, 14 studs a second | Washer |
+| SilverDropper | Dropper | $1,500 | $30 every 3 s | IronDropper |
+| Polisher | Upgrader | $3,500 | 2x at 75 studs | SilverDropper, Washer |
+| GoldDropper | Dropper | $7,000 | $80 every 4 s | SilverDropper |
+| BigCollector | Collector | $16,000 | Pays items at 1.5x | Polisher |
+| DiamondDropper | Dropper | $22,000 | $250 every 5 s | GoldDropper, BigCollector |
+
+A better conveyor or collector replaces the old one on the line, and only the best of each is shown
+(`FactoryLayout.rank`, `PlotService/Builder.showBestOfKind`).
 
 ## Layout
 

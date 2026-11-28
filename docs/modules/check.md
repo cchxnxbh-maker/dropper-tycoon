@@ -1,7 +1,7 @@
 # The check, the test runner and testkit
 
 Files: `tools/check.luau`, `tools/test.luau`, `tools/testkit.luau`, `tools/gen-index.luau`,
-`tools/check-literals.luau`, `tools/validate-config.luau`, their pure parts in `tools/lib/`, entry points in `.lune/`,
+`tools/check-literals.luau`, `tools/validate-config.luau`, `tools/balance.luau`, their pure parts in `tools/lib/`, entry points in `.lune/`,
 hook `.githooks/pre-commit`, workflow `.github/workflows/check.yml`. Decisions: ADR 0015, ADR 0017.
 
 ## `lune run check`
@@ -16,9 +16,18 @@ Runs these steps in order and stops at the first failure:
 | 4 | Types | `rojo sourcemap`, then `luau-lsp analyze` on `src`, `tests`, `tools/testkit.luau`, `tools/lib` | Any type error in strict mode |
 | 5 | No stray numbers | `tools/check-literals.luau` | A number other than 0, 1, 2 or -1 in services, logic or controllers without a `-- const:` reason |
 | 6 | Config values | `tools/validate-config.luau` | A config value breaks `Config/Schema.luau` |
-| 7 | Unit tests | `tools/test.luau` in the same process | A spec fails or cannot load, or no spec exists |
+| 7 | Pacing | `tools/balance.luau` | A simulated fresh factory breaks `Economy.pacing` or reaches the cash cap (ADR 0022) |
+| 8 | Unit tests | `tools/test.luau` in the same process | A spec fails or cannot load, or no spec exists |
 
-Still to come (plan section 7.5): `check-boundaries` and `check-docs` beside step 5, and `balance` after step 6.
+Still to come (plan section 7.5): `check-boundaries` and `check-docs` beside step 5.
+
+## `lune run balance`
+
+Plays a fresh factory from config (`src/shared/Logic/Balance.luau`): no cash, no machines, buying the cheapest
+available machine the moment it is affordable, with no walking time. It prints each purchase with its time, the wait
+before it and the income after, then fails if any wait is over `Economy.pacing.maxWaitSeconds`, buying everything
+takes less than `minTotalMinutes` or more than `maxTotalMinutes`, a machine is never bought, or cash reaches
+`Economy.maxCash`. Run it after changing any price or machine value.
 
 Exit code 0 means pass and 1 means fail, which is what the hook and CI read.
 

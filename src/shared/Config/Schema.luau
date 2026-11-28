@@ -65,6 +65,8 @@ local rules = Validate.record({
 		Sync = Validate.record({
 			cashPerSecond = Validate.number({ min = 0.5, max = 30 }),
 			cashSaveSeconds = Validate.number({ min = 0.1, max = 60 }),
+			cashEaseShare = Validate.number({ min = 0, max = 0.5 }),
+			cashEaseSeconds = Validate.number({ min = 0.01, max = 5 }),
 		}),
 		Network = Validate.record({
 			maxStringLength = Validate.number({ integer = true, min = 16, max = 10000 }),
@@ -121,6 +123,11 @@ local rules = Validate.record({
 	Economy = Validate.record({
 		maxCash = Validate.number({ min = 1, max = 1e15 }),
 		devCashGift = Validate.number({ min = 1, max = 1e15 }),
+		pacing = Validate.record({
+			maxWaitSeconds = Validate.number({ min = 1, max = 86400 }),
+			minTotalMinutes = Validate.number({ min = 0, max = 10000 }),
+			maxTotalMinutes = Validate.number({ min = 1, max = 10000 }),
+		}),
 	}),
 	Strings = Validate.map(
 		Validate.string({ pattern = "^%u%w*$", hint = "like Net (PascalCase)" }),

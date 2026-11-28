@@ -86,6 +86,7 @@ signals. Nobody reads another module's tables.
 | Owned buildables | `PurchaseService` | `owns` | `tryPurchase` | Built (ADR 0021) |
 | Multipliers, prestige points, perks, tiers | `PrestigeService` | `getPoints`, `hasPerk` | `rebirth`, `tryBuyPerk` | Phase 2 |
 | Client copy of player data | `ClientStore` | `get(key)`, `changed(key, fn)` | Only `Net/StateSync` | Built, two entries (ADR 0021) |
+| Client copy of the factory sim | `Net/FactoryMirror` | `sim()`, `tickAt(serverTime)` | Rebuilt from each `FactoryState` | Built (ADR 0022) |
 
 Only `DataService` requires ProfileStore (ADR 0003). Saves store IDs, never prices or rates, so rebalancing never
 needs a migration.
@@ -145,7 +146,9 @@ Each player's factory is a `Logic/FactorySim`: one line built from the machines 
 from `Logic/Kinds/`. Items are not stored. A dropper drops on steps that are multiples of its interval and each item
 arrives a fixed number of steps later, so the step that pays is a formula. FactoryService steps every sim at 10 a
 second and adds what arrives through EconomyService. The client is sent the numbers to run the same sim
-(`FactoryState`) and draws box items itself; no item crosses the network. Grey-box machines and purchase pads are
+(`FactoryState`, mirrored by `Net/FactoryMirror`) and draws box items itself; no item crosses the network. The HUD's
+cash counter is predicted from the same mirror between server updates (`FactorySim.earnedBetween`,
+`Logic/CashDisplay`): small gaps ease, big ones snap. Grey-box machines and purchase pads are
 built by PlotService from `Logic/FactoryLayout` and `Config/Factory.luau`. Buying: the client asks when its character
 is on a pad; PurchaseService checks `Logic/Purchase` (exists, not owned, requirements, distance, cash), spends, saves,
 places the machine and rebuilds. Details: `docs/modules/Factory.md`, `docs/modules/Economy.md`.
@@ -177,7 +180,8 @@ tagged models when they stream in and never assumes an instance exists.
 ## The check (ADR 0015)
 
 `lune run check` runs, in order and stopping at the first failure: index regeneration, StyLua, Selene, Rojo sourcemap
-plus luau-lsp analyze, `check-literals`, `validate-config`, then the unit tests. The pre-commit hook and GitHub Actions
+plus luau-lsp analyze, `check-literals`, `validate-config`, `balance` (a fresh factory played from config against the
+pacing targets, ADR 0022), then the unit tests. The pre-commit hook and GitHub Actions
 run the same command. Details: `docs/modules/check.md`.
 
 ## Differences from the plan

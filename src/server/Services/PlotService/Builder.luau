@@ -132,4 +132,37 @@ function Builder.box(box: FactoryLayout.Box, pivot: CFrame, parent: Instance): P
 	)
 end
 
+--[[
+	Of the machines of one kind on a plot that share a place on the line (conveyors, collectors), shows only the best
+	(`FactoryLayout.rank`), so two belts or two bins never draw over each other. Other kinds are left alone.
+	@param plot the plot
+	@param kind the kind just placed
+]]
+function Builder.showBestOfKind(plot: Plot, kind: string)
+	local best: Instance? = nil
+	local bestRank = -math.huge
+	local same: { Instance } = {}
+	for _, model in plot.machines:GetChildren() do
+		local def = Config.Buildables[model.Name]
+		local rank = if def and def.kind == kind then FactoryLayout.rank(def) else nil
+		if rank then
+			table.insert(same, model)
+			-- Ties go to the lower ID, so the choice never depends on the order children are listed in.
+			if rank > bestRank or (rank == bestRank and best ~= nil and model.Name < best.Name) then
+				best = model
+				bestRank = rank
+			end
+		end
+	end
+	for _, model in same do
+		local shown = model == best
+		for _, child in model:GetChildren() do
+			if child:IsA("BasePart") then
+				child.Transparency = if shown then 0 else 1
+				child.CanCollide = shown
+			end
+		end
+	end
+end
+
 return Builder

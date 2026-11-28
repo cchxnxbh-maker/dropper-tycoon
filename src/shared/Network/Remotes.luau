@@ -76,6 +76,8 @@ local Remotes = Net.define({
 	CashSync = Net.toClient({
 		payload = Validate.record({
 			cash = Validate.number({ min = 0 }),
+			-- `workspace:GetServerTimeNow()` when it was sent, so the client predicts from the right moment.
+			serverTime = Validate.number({ min = 0 }),
 		}),
 	}),
 	-- The player's factory, sent on join and after each purchase: what they own, and the numbers the client needs to

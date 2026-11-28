@@ -102,6 +102,21 @@ function FactoryLayout.boxes(def: Types.BuildableDef, factory: Types.Factory): {
 end
 
 --[[
+	How good a machine is among others of its kind that take the same place on the line. Only the best one is shown,
+	matching the simulation, which runs at the fastest conveyor and pays by the best collector.
+	@param def the machine
+	@return its speed for a conveyor, its multiplier for a collector; nil for kinds that each take their own place
+]]
+function FactoryLayout.rank(def: Types.BuildableDef): number?
+	if def.kind == "Conveyor" then
+		return def.params.speed
+	elseif def.kind == "Collector" then
+		return def.params.multiplier
+	end
+	return nil
+end
+
+--[[
 	The purchase pad of one machine.
 	@param def the machine's definition
 	@param factory the factory config

@@ -34,6 +34,9 @@ export type Tuning = {
 	Sync: {
 		cashPerSecond: number,
 		cashSaveSeconds: number,
+		-- The cash counter: a predicted gap up to this share eases over `cashEaseSeconds`; a bigger one snaps.
+		cashEaseShare: number,
+		cashEaseSeconds: number,
 	},
 	Network: {
 		maxStringLength: number,
@@ -118,6 +121,14 @@ export type Economy = {
 	maxCash: number,
 	-- What the dev panel's Give cash button adds.
 	devCashGift: number,
+	-- What `lune run balance` holds a fresh factory to. Buying is simulated with no walking time.
+	pacing: {
+		-- Longest wait allowed between two purchases.
+		maxWaitSeconds: number,
+		-- Buying every machine must take between these. The fun gate asks for 20 minutes of play.
+		minTotalMinutes: number,
+		maxTotalMinutes: number,
+	},
 }
 
 -- Player-facing text: system name, then key, then the text.

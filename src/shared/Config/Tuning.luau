@@ -24,6 +24,10 @@ local Tuning: Types.Tuning = {
 		-- Seconds between writes of a player's cash into their save. Spends are written at once; ProfileStore saves to
 		-- Roblox on its own schedule, so this only bounds how stale the in-memory save copy gets.
 		cashSaveSeconds = 2,
+		-- The cash counter between server updates (CLAUDE.md, server authority): a gap under 1% eases over 0.3
+		-- seconds, a larger one snaps.
+		cashEaseShare = 0.01,
+		cashEaseSeconds = 0.3,
 	},
 	Network = {
 		-- Longest text, in characters, any client request may carry anywhere. Requests carry IDs, so this is generous.

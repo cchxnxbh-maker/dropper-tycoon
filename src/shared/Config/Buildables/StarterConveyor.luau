@@ -13,7 +13,7 @@ local StarterConveyor: Types.BuildableDef = {
 	requires = {},
 	line = "Main",
 	params = { speed = 8 },
-	pad = { x = -40, z = -10 },
+	pad = { x = -50, z = -10 },
 }
 
 return StarterConveyor

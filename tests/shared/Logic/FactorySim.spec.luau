@@ -149,6 +149,22 @@ describe("FactorySim", function()
 		expect(FactorySim.itemsAt(stopped, 50, out, 40)).toBe(0)
 	end)
 
+	it("counts the cash between two steps exactly as stepping would", function()
+		local copper = { id = "Copper", kind = "Dropper", params = { itemValue = 5, interval = 2.5, at = 30 } }
+		local sim = FactorySim.new({ conveyor, collector, coal, copper, washer }, options(7, { Coal = 0 }))
+		local stepped = FactorySim.new({ conveyor, collector, coal, copper, washer }, options(7, { Coal = 0 }))
+		local total = 0
+		for _ = 1, 400 do
+			total += FactorySim.step(stepped)
+			expect(FactorySim.earnedBetween(sim, 7, stepped.tick)).toBeCloseTo(total, 1e-9)
+		end
+		-- Fractions of a step count only whole steps passed, and an empty or backwards range is nothing.
+		expect(FactorySim.earnedBetween(sim, 99.5, 100.2)).toBe(FactorySim.earnedBetween(sim, 99, 100))
+		expect(FactorySim.earnedBetween(sim, 200, 200)).toBe(0)
+		expect(FactorySim.earnedBetween(sim, 300, 200)).toBe(0)
+		expect(FactorySim.earnedBetween(FactorySim.new({ coal }, options()), 0, 1000)).toBe(0)
+	end)
+
 	it("rejects a machine whose kind has no file", function()
 		expect(function()
 			FactorySim.new({ { id = "Odd", kind = "Furnace", params = {} } }, options())

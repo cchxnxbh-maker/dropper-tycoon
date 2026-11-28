@@ -189,6 +189,35 @@ function FactorySim.starts(sim: Sim): { [string]: number }
 end
 
 --[[
+	The cash that arrives after one step and up to and including another, without stepping. The client uses it to
+	predict cash between server updates.
+	@param sim the sim
+	@param fromTick the step already counted (arrivals on it are not included); may have a fraction
+	@param toTick the last step to count; may have a fraction
+	@return the cash arriving on steps after `fromTick` up to `toTick`; 0 when the line is not running or toTick is not
+	later
+]]
+function FactorySim.earnedBetween(sim: Sim, fromTick: number, toTick: number): number
+	if not sim.running or toTick <= fromTick then
+		return 0
+	end
+	local from = math.floor(fromTick)
+	local to = math.floor(toTick)
+	local earned = 0
+	for _, dropper in sim.droppers do
+		local interval = dropper.intervalTicks
+		-- Drops that arrive in (from, to] were made in (from - travel, to - travel], and not before the start.
+		local first = math.max(from - dropper.travelTicks + 1, dropper.startTick)
+		local last = to - dropper.travelTicks
+		if last >= first then
+			local count = math.floor(last / interval) - math.floor((first - 1) / interval)
+			earned += math.max(0, count) * dropper.value
+		end
+	end
+	return earned
+end
+
+--[[
 	Where every item on the belt is at a moment between steps, for drawing them. Visual only.
 	@param sim the sim
 	@param tick the moment, in steps, which may have a fraction

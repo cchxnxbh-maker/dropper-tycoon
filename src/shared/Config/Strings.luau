@@ -45,6 +45,13 @@ local Strings: Types.Strings = {
 		coalDropper = "Coal Dropper",
 		copperDropper = "Copper Dropper",
 		washer = "Washer",
+		ironDropper = "Iron Dropper",
+		fastConveyor = "Fast Conveyor",
+		silverDropper = "Silver Dropper",
+		polisher = "Polisher",
+		goldDropper = "Gold Dropper",
+		bigCollector = "Big Collector",
+		diamondDropper = "Diamond Dropper",
 	},
 	Purchase = {
 		-- Under a machine's name on its pad. {price} is the formatted price.

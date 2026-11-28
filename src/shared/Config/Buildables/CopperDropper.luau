@@ -12,8 +12,8 @@ local CopperDropper: Types.BuildableDef = {
 	price = 30,
 	requires = { "CoalDropper" },
 	line = "Main",
-	params = { itemValue = 5, interval = 2.5, at = 25 },
-	pad = { x = 20, z = -10 },
+	params = { itemValue = 5, interval = 2.5, at = 15 },
+	pad = { x = 10, z = -10 },
 }
 
 return CopperDropper

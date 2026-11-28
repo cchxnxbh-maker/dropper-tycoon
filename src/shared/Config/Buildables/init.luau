@@ -4,8 +4,15 @@
 
 local index: { [string]: any } = {
 	BasicCollector = require("@self/BasicCollector"),
+	BigCollector = require("@self/BigCollector"),
 	CoalDropper = require("@self/CoalDropper"),
 	CopperDropper = require("@self/CopperDropper"),
+	DiamondDropper = require("@self/DiamondDropper"),
+	FastConveyor = require("@self/FastConveyor"),
+	GoldDropper = require("@self/GoldDropper"),
+	IronDropper = require("@self/IronDropper"),
+	Polisher = require("@self/Polisher"),
+	SilverDropper = require("@self/SilverDropper"),
 	StarterConveyor = require("@self/StarterConveyor"),
 	Washer = require("@self/Washer"),
 }
