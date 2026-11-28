@@ -71,18 +71,22 @@ functions or listen to its signals.
 | Owned buildables | `PurchaseService` |
 | Plots and plot models | `PlotService` |
 | Running factory simulation | `FactoryService` |
+| Dev panel access and the `dev` save section | `DevService` |
 | Client copy of player data | `ClientStore`, written only by the network layer |
 
 **Dependencies and communication.**
 
 - Server services start in this order: Data, Economy, Prestige, Plot, Factory, Purchase, Offline, Leaderboard,
-  Analytics, Monetization. A service may call only services earlier in the order. No circular requires.
+  Analytics, Monetization, Dev (ADR 0020). A service may call only services earlier in the order. No circular
+  requires.
 - Need a result: call a public function. Something happened: fire a signal on the owner. Signals carry facts, never
   requests.
 - No module reads another module's tables. Public functions only.
 - Client code never requires server code.
 - Parts and models link to code through CollectionService tags plus attributes (tag `Buildable`, attribute
-  `BuildableId`). Gameplay never stores state in parts.
+  `BuildableId`), named once in `Util/WorldKeys.luau`. Gameplay never stores state in parts.
+- Streaming is on (settings in `default.project.json`). Client code binds to tagged models when they stream in and
+  never assumes an instance exists.
 - No service framework (ADR 0006). Each service is a plain module with `init` and `start`. The two `Main` files stay
   thin: init everything, then start everything, in order.
 
@@ -90,11 +94,11 @@ functions or listen to its signals.
 
 | Folder | In Roblox | Holds |
 | --- | --- | --- |
-| `src/server` | ServerScriptService.Server | Services, Net (ServerNet, Pipeline, Handlers), Migrations, Vendor, Dev |
+| `src/server` | ServerScriptService.Server | Services, Net (ServerNet, Pipeline, Handlers), Migrations, DevCommands, Config (server-only), Vendor, Dev |
 | `src/client` | StarterPlayerScripts.Client | Controllers, Net (ClientNet), UI screens, UI kit, views, Dev |
 | `src/shared` | ReplicatedStorage.Shared | Config, Logic, Network, Types, Util. Assume exploiters read all of it |
 | `src/first` | ReplicatedFirst.First | Loading screen only |
-| `place/Game.rbxl` | the place file | Map, plot template, models (Git LFS) |
+| `place/Game.rbxl` | the place file | Map, plot template, models (Git LFS). Empty plots are built by code until art (ADR 0020) |
 
 - `src/shared/Logic` is pure Luau: relative requires only, never touches `game`, iterates arrays or sorted keys (no bare
   `pairs`), never reads the clock. That is what lets Lune test it without Studio.

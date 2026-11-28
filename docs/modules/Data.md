@@ -51,6 +51,13 @@ false and logs an error, and the save is as it was. `change` must not yield.
 
 Saves hold IDs and counts, never prices or rates, so a rebalance never needs a migration.
 
+## Versions so far
+
+| Version | Migration | Adds | Owner |
+| --- | --- | --- | --- |
+| 1 | `v001_initial` | `meta`: joins, first and last join time | DataService |
+| 2 | `v002_dev_counter` | `dev.testCounter`, the dev panel's test counter | DevService (ADR 0020) |
+
 ## Which store
 
 | Where | Store |

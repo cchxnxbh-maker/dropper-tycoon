@@ -2,7 +2,8 @@
 -- Schema: the rules every config file must pass (plan section 5.2, guard 2; ADR 0017).
 --
 -- Type analysis already catches a missing or misspelled field. These rules catch what types cannot: numbers out of
--- range, unknown log levels, a malformed version, and registry entries whose ID does not match their file. The loader
+-- range, unknown log levels, a malformed version, registry entries whose ID does not match their file, and plots that
+-- would overlap. The loader
 -- runs them at startup in Roblox, and `lune run validate-config` runs them in the check, so a bad value fails both
 -- places with the same message.
 --
@@ -13,6 +14,7 @@
 --     if #problems > 0 then error(Schema.report(problems)) end
 
 local Log = require("../Util/Log")
+local PlotLayout = require("../Logic/PlotLayout")
 local Validate = require("../Logic/Validate")
 
 -- A plain string list for the rule, copied from Log so the two can never disagree.
@@ -22,6 +24,8 @@ for _, name in Log.LEVELS do
 end
 
 local level = Validate.string({ oneOf = LEVELS })
+local color = Validate.string({ pattern = "^#%x%x%x%x%x%x$", hint = "like #6E9A5A (a # and six hex digits)" })
+local studs = Validate.number({ min = 1, max = 1000 })
 
 local rules = Validate.record({
 	Build = Validate.record({
@@ -52,6 +56,21 @@ local rules = Validate.record({
 			clientRateShare = Validate.number({ min = 0.1, max = 1 }),
 		}),
 	}),
+	-- The outer limits keep every plot within the plan's world size and the server within Roblox's player limit.
+	Plots = Validate.record({
+		count = Validate.number({ integer = true, min = 1, max = 50 }),
+		ringRadius = Validate.number({ min = 0, max = 2000 }),
+		baseSize = studs,
+		baseThickness = Validate.number({ min = 0.2, max = 20 }),
+		spawnInset = studs,
+		spawnSize = studs,
+		padThickness = Validate.number({ min = 0.05, max = 20 }),
+		signWidth = studs,
+		signHeight = studs,
+		signThickness = Validate.number({ min = 0.05, max = 20 }),
+		signLift = Validate.number({ min = 0, max = 100 }),
+		colors = Validate.record({ base = color, spawn = color, sign = color }),
+	}),
 	Strings = Validate.map(
 		Validate.string({ pattern = "^%u%w*$", hint = "like Net (PascalCase)" }),
 		Validate.map(
@@ -71,7 +90,14 @@ local Schema = {}
 	@return one line per problem, such as `Tuning.Timing.simRate: must be at least 1, got 0`; empty when valid
 ]]
 function Schema.validate(sources: any): { string }
-	return Validate.run(sources, rules, "")
+	local problems = Validate.run(sources, rules, "")
+	-- Rules across several fields run only on fields that passed, so each problem is reported once.
+	if #problems == 0 then
+		for _, problem in PlotLayout.problems(sources.Plots) do
+			table.insert(problems, problem)
+		end
+	end
+	return problems
 end
 
 --[[

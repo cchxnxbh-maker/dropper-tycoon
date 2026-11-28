@@ -68,7 +68,20 @@ describe("Save fixtures", function()
 		local result = SaveLoad.prepare({}, Migrations, SaveSchema)
 		expect(result.kind).toBe("ready")
 		if result.kind == "ready" then
-			expect(result.data).toEqual({ schemaVersion = CURRENT, meta = { joins = 0, firstJoin = 0, lastJoin = 0 } })
+			expect(result.data).toEqual({
+				schemaVersion = CURRENT,
+				meta = { joins = 0, firstJoin = 0, lastJoin = 0 },
+				dev = { testCounter = 0 },
+			})
+		end
+	end)
+
+	it("keeps a version 1 save's values and starts its test counter at 0", function()
+		local result = SaveLoad.prepare(Fixtures.v001, Migrations, SaveSchema)
+		expect(result.kind).toBe("ready")
+		if result.kind == "ready" then
+			expect(result.data.meta).toEqual(Fixtures.v001.meta)
+			expect(result.data.dev).toEqual({ testCounter = 0 })
 		end
 	end)
 

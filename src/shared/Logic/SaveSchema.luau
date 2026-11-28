@@ -29,15 +29,22 @@ export type Meta = {
 	lastJoin: number,
 }
 
+-- Developer test values, changed only through the dev panel (`DevService` owns them). Version 2 adds the counter that
+-- the Phase 0 exit test raises and checks after a rejoin.
+export type Dev = {
+	testCounter: number,
+}
+
 export type SaveData = {
 	schemaVersion: number,
 	meta: Meta,
+	dev: Dev,
 }
 
 local SaveSchema = {}
 
 -- The version this build writes. A save with a higher number was written by a newer build and is refused.
-SaveSchema.CURRENT_VERSION = 1
+SaveSchema.CURRENT_VERSION = 2
 
 local count = Validate.number({ integer = true, min = 0 })
 
@@ -51,6 +58,9 @@ SaveSchema.rule = Validate.record({
 		joins = count,
 		firstJoin = count,
 		lastJoin = count,
+	}),
+	dev = Validate.record({
+		testCounter = count,
 	}),
 })
 

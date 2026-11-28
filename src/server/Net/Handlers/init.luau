@@ -3,6 +3,7 @@
 -- here and run `lune run gen-index` (the check does it too).
 
 local index: { [string]: any } = {
+	RequestDevCommand = require("@self/RequestDevCommand"),
 	RequestTestPing = require("@self/RequestTestPing"),
 }
 

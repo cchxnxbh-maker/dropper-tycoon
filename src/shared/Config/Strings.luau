@@ -26,6 +26,26 @@ local Strings: Types.Strings = {
 		-- Shown when the player joined another server, which now holds their progress.
 		sessionTaken = "Your progress was opened on another server, so this one has let it go. Please rejoin.",
 	},
+	Plot = {
+		-- On the sign of a plot nobody has claimed yet.
+		freeSign = "Free plot",
+		-- On the sign of another player's plot. {name} is their display name.
+		ownerSign = "{name}'s factory",
+		-- On the sign of the player's own plot, as only they see it.
+		yourSign = "Your factory",
+		-- Under the owner line on every sign. {number} is the plot's number, 1 to 6.
+		number = "Plot {number}",
+		-- Shown when every plot is taken. Max Players should prevent this; it is the safety net.
+		serverFull = "This server has no free plot. Please rejoin to find another server.",
+	},
+	DevPanel = {
+		-- Heading of the developer panel, seen only in Studio and by the allowed accounts.
+		title = "Dev panel",
+		-- The saved test counter. {value} is its current value.
+		counter = "Test counter: {value}",
+		-- The button that adds one to the test counter.
+		addCounter = "Add 1",
+	},
 }
 
 return Strings

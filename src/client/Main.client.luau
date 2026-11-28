@@ -9,8 +9,10 @@ local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ClientNet = require(script.Parent.Net.ClientNet)
 local Config = require(Shared:WaitForChild("Config"))
+local DevPanelController = require(script.Parent.Controllers.DevPanelController)
 local Log = require(Shared:WaitForChild("Util"):WaitForChild("Log"))
 local PingController = require(script.Parent.Controllers.PingController)
+local PlotSignController = require(script.Parent.Controllers.PlotSignController)
 local Scheduler = require(Shared:WaitForChild("Util"):WaitForChild("Scheduler"))
 local Trove = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Trove"))
 
@@ -20,8 +22,12 @@ Log.setBuild(Config.Build.version)
 -- Init everything, then start everything. ClientNet comes first: controllers talk to the server through it.
 ClientNet.init()
 PingController.init()
+PlotSignController.init()
+DevPanelController.init()
 
 PingController.start()
+PlotSignController.start()
+DevPanelController.start()
 
 local trove = Trove.new()
 trove:Add(RunService.Heartbeat:Connect(Scheduler.update))

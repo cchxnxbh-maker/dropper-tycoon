@@ -11,11 +11,12 @@ local fs = require("@lune/fs")
 
 local indexfile = require("./lib/indexfile")
 
--- Every registry folder: config registries, one handler file per client request, the save migrations and one stored
--- save fixture per past schema version. Perks and Modifiers join here when those systems arrive.
+-- Every registry folder: config registries, one handler file per client request, one file per dev command, the save
+-- migrations and one stored save fixture per past schema version. Perks and Modifiers join here when those systems arrive.
 local FOLDERS = {
 	"src/shared/Config/Buildables",
 	"src/server/Net/Handlers",
+	"src/server/DevCommands",
 	"src/server/Migrations",
 	"tests/fixtures/saves",
 }

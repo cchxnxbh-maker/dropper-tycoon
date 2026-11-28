@@ -60,7 +60,7 @@ error at server start.
 `AbuseCases.all(Remotes)` builds, for every client request: the request replaced by each kind of bad value, the
 request missing, an unknown field, then for each field: missing, wrong types, NaN, infinity, minus infinity, -1, text
 one past the limit, 10,000 characters of text, tables too deep and too wide. Then the example once (must be accepted)
-and 100 copies at once (must be rate limited). For `RequestTestPing` that is 126 requests.
+and 100 copies at once (must be rate limited). For `RequestTestPing` that is 126 requests; with `RequestDevCommand` (task 10) the suite sends 252.
 
 - **In the check:** `tests/server/Net/Pipeline.spec.luau` runs them against the pipeline.
 - **In Studio:** at the start of every playtest, while `Flags.Features.studioAbuseSuite` is on, the server puts the
@@ -68,7 +68,7 @@ and 100 copies at once (must be rate limited). For `RequestTestPing` that is 126
   prints one line:
 
   ```
-  [INFO] [AbuseSuite] PASSED: every hostile request was rejected and state is unchanged cases=126
+  [INFO] [AbuseSuite] PASSED: every hostile request was rejected and state is unchanged cases=252
   ```
 
   or a `FAILED` line after one error line per mismatch. Audit mode skips handlers and never kicks. Afterwards the

@@ -7,7 +7,9 @@
         "$path": "src/shared"
       },
       "Packages": {
-        "$path": { "optional": "Packages" }
+        "$path": {
+          "optional": "Packages"
+        }
       }
     },
     "ServerScriptService": {
@@ -26,7 +28,18 @@
       "First": {
         "$path": "src/first"
       }
+    },
+    "Workspace": {
+      "$properties": {
+        "StreamingEnabled": true,
+        "StreamingIntegrityMode": "PauseOutsideLoadedArea",
+        "StreamingMinRadius": 128,
+        "StreamingTargetRadius": 640,
+        "StreamOutBehavior": "Opportunistic"
+      }
     }
   },
-  "globIgnorePaths": ["**/.gitkeep"]
+  "globIgnorePaths": [
+    "**/.gitkeep"
+  ]
 }
