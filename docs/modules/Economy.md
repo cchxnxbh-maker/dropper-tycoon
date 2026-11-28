@@ -4,8 +4,10 @@ Files: `src/server/Services/EconomyService.luau`, `src/server/Services/PurchaseS
 `src/shared/Logic/Purchase.luau`, `src/shared/Logic/NumberFormat.luau`, `src/shared/Config/Economy.luau`,
 `src/server/Net/Handlers/RequestPurchase.luau`, `src/client/Controllers/PadController.luau`,
 `src/client/Views/PurchasePad.luau`, `src/client/Controllers/HudController.luau`, `src/client/UI/Screens/Hud.luau`,
-`src/client/Net/ClientStore.luau`, `src/client/Net/StateSync.luau`. Specs: `tests/shared/Logic/Purchase.spec.luau`,
-`tests/shared/Logic/NumberFormat.spec.luau`. Plan sections 3.4, 3.6 and 4.5. Decision: ADR 0021.
+`src/client/Net/ClientStore.luau`, `src/client/Net/StateSync.luau`, `src/client/Net/FactoryMirror.luau`,
+`src/shared/Logic/CashDisplay.luau`, `src/shared/Logic/Balance.luau`, `tools/balance.luau`. Specs: `tests/shared/Logic/Purchase.spec.luau`,
+`tests/shared/Logic/NumberFormat.spec.luau`, `tests/shared/Logic/CashDisplay.spec.luau`,
+`tests/shared/Logic/Balance.spec.luau`. Plan sections 3.4, 3.6 and 4.5. Decisions: ADR 0021, ADR 0022.
 
 ```luau
 EconomyService.getCash(player)                   -- 0 while the save is not loaded
@@ -43,8 +45,19 @@ Cash is never negative and never above `Economy.maxCash` (1e15, ADR 0009).
 
 ## The client copy
 
-`ClientStore` holds `cash` and `factory` (the last `FactoryState`). Only `Net/StateSync.luau` writes it. The HUD shows
-cash and cash per second at the top of the screen.
+`ClientStore` holds `cash` (the last `CashSync`: cash and the server time it was sent) and `factory` (the last
+`FactoryState`). Only `Net/StateSync.luau` writes it. The HUD shows cash and cash per second at the top of the screen.
+
+The cash counter is predicted between server updates (ADR 0022): the last server cash plus
+`FactorySim.earnedBetween` on the client's mirror of the factory (`Net/FactoryMirror`), from the step at the sync's
+server time to now. `Logic/CashDisplay` eases a gap up to `Tuning.Sync.cashEaseShare` (1%) over `cashEaseSeconds`
+(0.3 s) and snaps anything bigger, such as a purchase. The label changes at most `cashPerSecond` times a second.
+
+## Pacing
+
+`Economy.pacing` holds the targets `lune run balance` checks on every run of the check: no wait over
+`maxWaitSeconds`, and all of tier 1 bought in between `minTotalMinutes` and `maxTotalMinutes` (walking not
+counted). Every value is a starting value for playtests.
 
 ## Known traps
 

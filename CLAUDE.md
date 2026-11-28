@@ -135,10 +135,11 @@ Tool versions are pinned in `rokit.toml` (ADR 0005). Packages are pinned in `wal
 | `lune run test [filter]` | Unit tests only, optionally only specs whose path contains `filter` |
 | `lune run gen-index` | Rewrites registry `init.luau` indexes after adding or removing a registry file |
 | `lune run validate-config` | Checks config values; one readable line per problem |
+| `lune run balance` | Plays a fresh factory from config and checks the pacing targets in `Economy.pacing` |
 
 The check runs, in order and stopping at the first failure: index regeneration, StyLua, Selene, Rojo sourcemap plus
-luau-lsp analyze, `check-literals`, `validate-config`, then unit tests. The boundary and docs checks and `balance` join
-as their systems arrive. The pre-commit hook (`.githooks/pre-commit`, turned on with
+luau-lsp analyze, `check-literals`, `validate-config`, `balance` (pacing, ADR 0022), then unit tests. The boundary and
+docs checks join as their systems arrive. The pre-commit hook (`.githooks/pre-commit`, turned on with
 `git config core.hooksPath .githooks`) and GitHub Actions (`.github/workflows/check.yml`) run the same command. Never
 commit with `--no-verify`.
 

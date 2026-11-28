@@ -20,8 +20,8 @@ local StateSync = {}
 	Starts listening. Call once, after `ClientNet.init`.
 ]]
 function StateSync.init()
-	ClientNet.on(Remotes.CashSync, function(payload: { cash: number })
-		ClientStore.write("cash", payload.cash)
+	ClientNet.on(Remotes.CashSync, function(payload: ClientStore.Cash)
+		ClientStore.write("cash", payload)
 	end)
 	ClientNet.on(Remotes.FactoryState, function(payload: ClientStore.Factory)
 		ClientStore.write("factory", payload)

@@ -210,6 +210,7 @@ function PlotService.placeMachine(player: Player, def: Types.BuildableDef): bool
 	model:SetAttribute(Attributes.BuildableId, def.id)
 	CollectionService:AddTag(model, WorldKeys.Tags.Buildable)
 	model.Parent = plot.machines
+	Builder.showBestOfKind(plot, def.kind)
 	return true
 end
 

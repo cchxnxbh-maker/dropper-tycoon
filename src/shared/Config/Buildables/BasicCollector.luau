@@ -13,7 +13,7 @@ local BasicCollector: Types.BuildableDef = {
 	requires = { "StarterConveyor" },
 	line = "Main",
 	params = { multiplier = 1 },
-	pad = { x = -20, z = -10 },
+	pad = { x = -30, z = -10 },
 }
 
 return BasicCollector

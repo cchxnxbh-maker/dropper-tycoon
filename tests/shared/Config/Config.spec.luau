@@ -144,10 +144,10 @@ describe("Schema buildable rules", function()
 
 	it("rejects a requirement that does not exist and a machine with no name", function()
 		local config = good()
-		config.Buildables.CoalDropper.requires = { "GoldDropper" }
+		config.Buildables.CoalDropper.requires = { "RubyDropper" }
 		config.Strings.Buildables.washer = nil
 		expect(Schema.validate(config)).toEqual({
-			'Buildables.CoalDropper.requires: "GoldDropper" is not a buildable',
+			'Buildables.CoalDropper.requires: "RubyDropper" is not a buildable',
 			"Strings.Buildables.washer: missing; every machine needs a name",
 		})
 	end)

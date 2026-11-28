@@ -13,7 +13,7 @@ local CoalDropper: Types.BuildableDef = {
 	requires = { "BasicCollector" },
 	line = "Main",
 	params = { itemValue = 2, interval = 2, at = 5 },
-	pad = { x = 0, z = -10 },
+	pad = { x = -10, z = -10 },
 }
 
 return CoalDropper

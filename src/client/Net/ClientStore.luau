@@ -20,6 +20,9 @@ export type Factory = {
 	incomeRate: number,
 }
 
+-- The last cash the server sent, and the server time it was sent at.
+export type Cash = { cash: number, serverTime: number }
+
 export type Key = "cash" | "factory"
 
 local ClientStore = {}
@@ -29,7 +32,7 @@ local listeners: { [string]: { (value: any) -> () } } = {}
 
 --[[
 	The latest value of an entry.
-	@param key "cash" (a number) or "factory" (a `Factory`)
+	@param key "cash" (a `Cash`) or "factory" (a `Factory`)
 	@return the value; nil until the server has sent it
 ]]
 function ClientStore.get(key: Key): any

@@ -1,14 +1,15 @@
 --!strict
 -- FactoryViewController: draws the box items riding the player's conveyor (plan section 4.4, ADR 0021).
 --
--- Items are never sent by the server. The client builds the same `FactorySim` from the `FactoryState` the server sent
+-- Items are never sent by the server. `Net/FactoryMirror` builds the same `FactorySim` from the `FactoryState` the
+-- server sent
 -- (what is owned, each dropper's start step, and the step at a moment of server time), works out the current step
 -- from the shared server clock, and asks the sim where every item is. So the boxes reach the collector on the very
 -- step the server pays for them. The boxes are anchored and never collide, touch or block anything; they are only a
 -- picture (ADR 0002). Only the player's own plot is drawn for now; other plots join with the level of detail rules
 -- (plan section 4.12).
 --
--- State owned: the client copy of the simulation, and a pool of box parts in `Workspace.Items`.
+-- State owned: a pool of box parts in `Workspace.Items`.
 --
 -- Usage, in Main:
 --     FactoryViewController.init()
@@ -22,6 +23,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ClientStore = require(script.Parent.Parent.Net.ClientStore)
 local Config = require(Shared:WaitForChild("Config"))
 local FactoryLayout = require(Shared:WaitForChild("Logic"):WaitForChild("FactoryLayout"))
+local FactoryMirror = require(script.Parent.Parent.Net.FactoryMirror)
 local FactorySim = require(Shared:WaitForChild("Logic"):WaitForChild("FactorySim"))
 local PlotLayout = require(Shared:WaitForChild("Logic"):WaitForChild("PlotLayout"))
 local Scheduler = require(Shared:WaitForChild("Util"):WaitForChild("Scheduler"))
@@ -32,10 +34,6 @@ local FactoryViewController = {}
 
 local trove = Trove.new()
 local folder: Folder
-local sim: FactorySim.Sim? = nil
--- The sim's step at `syncTime` on the server clock.
-local syncTick = 0
-local syncTime = 0
 local plotPivot: CFrame? = nil
 
 -- Reused every frame, so drawing allocates nothing.
@@ -82,36 +80,20 @@ local function findPlotPivot(): CFrame?
 	return nil
 end
 
-local function onFactory(state: ClientStore.Factory)
-	-- Machine definitions carry more fields than the sim reads; it takes them as they are.
-	local defs: { any } = {}
-	for id in state.owned do
-		local def = Config.Buildables[id]
-		if def then
-			table.insert(defs, def)
-		end
-	end
-	local rate = Config.Tuning.Timing.simRate
-	sim = FactorySim.new(
-		defs,
-		{ length = Config.Factory.line.length, rate = rate, tick = state.tick, starts = state.starts }
-	)
-	syncTick = state.tick
-	syncTime = state.serverTime
-	plotPivot = findPlotPivot()
-	-- Enough parts for every dropper's fullest belt.
-	local droppers = if sim then #sim.droppers else 0
-	local needed = droppers * Config.Factory.maxItemsPerDropper
+-- Enough parts for every dropper's fullest belt.
+local function grow(sim: FactorySim.Sim)
+	local needed = #sim.droppers * Config.Factory.maxItemsPerDropper
 	while #parts < needed do
 		table.insert(parts, newPart())
 	end
 end
 
 local function render()
-	local current = sim
+	local current = FactoryMirror.sim()
 	if current == nil then
 		return
 	end
+	grow(current)
 	if plotPivot == nil then
 		plotPivot = findPlotPivot()
 		if plotPivot == nil then
@@ -119,7 +101,7 @@ local function render()
 		end
 	end
 	local pivot = plotPivot :: CFrame
-	local tick = syncTick + (Workspace:GetServerTimeNow() - syncTime) * current.rate
+	local tick = FactoryMirror.tickAt(Workspace:GetServerTimeNow())
 	local count = math.min(#parts, FactorySim.itemsAt(current, tick, positions, Config.Factory.maxItemsPerDropper))
 	local lift = Config.Factory.itemSize / 2
 	table.clear(moving)
@@ -153,7 +135,10 @@ end
 	Follows the player's factory state and draws the items every frame.
 ]]
 function FactoryViewController.start()
-	trove:Add(ClientStore.changed("factory", onFactory))
+	trove:Add(ClientStore.changed("factory", function()
+		-- A purchase may have moved the plot's machines; find the plot again in case it changed.
+		plotPivot = findPlotPivot()
+	end))
 	Scheduler.onRender("ItemVisuals", render)
 end
 

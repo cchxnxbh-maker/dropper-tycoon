@@ -12,6 +12,7 @@ local fs = require("@lune/fs")
 local net = require("@lune/net")
 local process = require("@lune/process")
 
+local balance = require("./balance")
 local checkLiterals = require("./check-literals")
 local genIndex = require("./gen-index")
 local test = require("./test")
@@ -126,6 +127,7 @@ check.steps = {
 	-- The boundary and docs checks join here, and `balance` after validate-config, as their systems arrive.
 	{ name = "No stray numbers (check-literals)", run = checkLiterals.run },
 	{ name = "Config values (validate-config)", run = validateConfig.run },
+	{ name = "Pacing (balance)", run = balance.run },
 	{
 		name = "Unit tests (Lune)",
 		run = function()

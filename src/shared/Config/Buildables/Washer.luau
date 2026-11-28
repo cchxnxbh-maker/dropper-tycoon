@@ -13,7 +13,7 @@ local Washer: Types.BuildableDef = {
 	requires = { "CopperDropper" },
 	line = "Main",
 	params = { multiplier = 1.5, at = 60 },
-	pad = { x = 40, z = -10 },
+	pad = { x = 30, z = -10 },
 }
 
 return Washer

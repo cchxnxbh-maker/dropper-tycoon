@@ -59,6 +59,12 @@ describe("FactoryLayout", function()
 		expect(pad.sx).toBe(factory.padSize)
 	end)
 
+	it("ranks conveyors by speed and collectors by multiplier, and nothing else", function()
+		expect(FactoryLayout.rank(def("Fast", "Conveyor", { speed = 14 }, 0, 0))).toBe(14)
+		expect(FactoryLayout.rank(def("Big", "Collector", { multiplier = 1.5 }, 0, 0))).toBe(1.5)
+		expect(FactoryLayout.rank(def("Coal", "Dropper", { at = 5 }, 0, 0))).toBeNil()
+	end)
+
 	it("finds no problem with the real config", function()
 		local ids = Purchase.sortedIds(Config.Buildables)
 		expect(FactoryLayout.problems(factory, Config.Plots, Config.Buildables, ids)).toEqual({})
