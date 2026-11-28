@@ -54,6 +54,11 @@ type Session = {
 }
 
 export type Snapshot = SaveSchema.SaveData
+-- Spelled out here because Wally's package link files do not re-export the Signal package's types.
+export type PlayerSignal = {
+	Connect: (self: any, listener: (player: Player) -> ()) -> { Disconnect: (self: any) -> () },
+	Fire: (self: any, player: Player) -> (),
+}
 export type StoreKind = "real" | "mock"
 
 local TAG = "Data"
@@ -66,14 +71,14 @@ local DataService = {}
 --[[
 	Fires once a player's save is loaded and valid and their session is Playing. Carries the player.
 ]]
-DataService.profileLoaded = Signal.new() :: Signal.Signal<Player>
+DataService.profileLoaded = (Signal.new() :: any) :: PlayerSignal
 
 --[[
 	Fires when a Playing session is about to stop: the player left, the server is shutting down, or another server
 	took the session. Carries the player. Owners that keep state in memory write it with `mutate` right away, without
 	yielding (it is refused when another server took the session, since this server may no longer write).
 ]]
-DataService.profileReleasing = Signal.new() :: Signal.Signal<Player>
+DataService.profileReleasing = (Signal.new() :: any) :: PlayerSignal
 
 local trove = Trove.new()
 local sessions: { [Player]: Session } = {}
