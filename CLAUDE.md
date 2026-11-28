@@ -40,7 +40,7 @@ and rebirth trades the factory for prestige points that buy permanent perks. Six
 ## Architecture rules
 
 Three layers: pure logic that knows nothing about Roblox, server services that own all state, client controllers that
-only display it. Full detail: plan sections 3 and 4, later `docs/ARCHITECTURE.md`.
+only display it. Full detail: `docs/ARCHITECTURE.md` (kept current), then plan sections 3 and 4.
 
 **Server authority (ADR 0002).** The server decides everything that is saved or scored: cash, purchases, ownership,
 rebirths, prestige points, time. The client only asks and displays.
@@ -187,5 +187,5 @@ his PC.
 
 - `README.md`: setup and running, for humans.
 - `docs/adr/`: every decision and why.
-- `docs/ARCHITECTURE.md`, `docs/modules/`, `docs/QA_CHECKLIST.md`, `docs/RUNBOOK.md`: arrive as their systems are
-  built. Until then, the build plan is the reference.
+- `docs/ARCHITECTURE.md`: how the game is put together today, and where it differs from the plan.
+- `docs/modules/`: one page per system. `docs/QA_CHECKLIST.md` and `docs/RUNBOOK.md` arrive as their systems are built.
